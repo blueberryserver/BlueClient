@@ -168,6 +168,20 @@ public class NetControlPanel : MonoBehaviour, NetHandler
     string textDisplayUpdate = "";
     bool _isLogin = false;
     Image _image = null;
+    List<InputField> _inputFieldList = new List<InputField>();
+
+    string GetInputFieldText(string name)
+    {
+        foreach (InputField inputFIend in _inputFieldList)
+        {
+            if (inputFIend.name == name)
+            {
+                return inputFIend.text;
+            }
+        }
+
+        return null;
+    }
 
     void Start()
     {
@@ -197,6 +211,11 @@ public class NetControlPanel : MonoBehaviour, NetHandler
         _textDisplay = textDisplay;
     }
 
+    public void AddInputField(InputField inputField)
+    {
+        _inputFieldList.Add(inputField);
+    }
+
     public void OnButtonLogin()
     {
         Debug.Log("OnButtonLogin");
@@ -213,18 +232,90 @@ public class NetControlPanel : MonoBehaviour, NetHandler
 
     public void OnButtonPlayDungeonReq()
     {
-        Debug.Log("OnButtonPlayDungeonReq");
+        Debug.Log("OnButtonPlayDungeonReq(no : " + GetInputFieldText("PlayDungeonReq.dungeonNo") + ", tier : " + GetInputFieldText("PlayDungeonReq.tier") + ")");
+        textDisplayUpdate = "OnButtonPlayDungeonReq(no : " + GetInputFieldText("PlayDungeonReq.dungeonNo") + ", tier : " + GetInputFieldText("PlayDungeonReq.tier") + ")";
 
         MSG.PlayDungeonReq req = new MSG.PlayDungeonReq();
-        req.dungeonNo = 1;
-        req.tier = 1;
+        req.dungeonNo = Convert.ToUInt32(GetInputFieldText("PlayDungeonReq.dungeonNo"));
+        req.tier = Convert.ToUInt32(GetInputFieldText("PlayDungeonReq.tier"));
         _netClient.SendPacket(MSG.MsgId.PLAYDUNGEON_REQ, req);
+    }
+
+    public void OnButtonLevelupCharReq()
+    {
+        Debug.Log("OnButtonLevelupCharReq");
+        textDisplayUpdate = "OnButtonLevelupCharReq";
+
+        User user = UserManager.Instance.Find(_sessionKey);
+
+        uint slotNo = Convert.ToUInt32(GetInputFieldText("LevelupCharReq.slotNo"));
+        MSG.CharData_ charData = null;
+        foreach (MSG.CharData_ cd in user._data.chars)
+        {
+            if (cd.slotNo == slotNo)
+            {
+                charData = cd;
+                break;
+            }
+        }
+
+        textDisplayUpdate += "\n";
+        textDisplayUpdate += "cid : " + charData.cid.ToString() + "\n";
+        textDisplayUpdate += "uid : " + charData.uid.ToString() + "\n";
+        textDisplayUpdate += "slotNo : " + charData.slotNo.ToString() + "\n";
+        textDisplayUpdate += "typeNo : " + charData.typeNo.ToString() + "\n";
+        textDisplayUpdate += "level : " + charData.level.ToString() + "\n";
+        textDisplayUpdate += "tier : " + charData.tier.ToString() + "\n";
+        textDisplayUpdate += "regDate : " + charData.regDate + "\n";
+        
+        MSG.LevelupCharReq req = new MSG.LevelupCharReq();
+        req.slotNo = slotNo;
+        _netClient.SendPacket(MSG.MsgId.LEVELUPCHAR_REQ, req);
+    }
+
+    public void OnButtonTierupCharReq()
+    {
+        Debug.Log("OnButtonTierupCharReq");
+        textDisplayUpdate = "OnButtonTierupCharReq";
+
+        User user = UserManager.Instance.Find(_sessionKey);
+
+        uint slotNo = Convert.ToUInt32(GetInputFieldText("TierupCharReq.slotNo"));
+        MSG.CharData_ charData = null;
+        foreach (MSG.CharData_ cd in user._data.chars)
+        {
+            if (cd.slotNo == slotNo)
+            {
+                charData = cd;
+                break;
+            }
+        }
+
+        textDisplayUpdate += "\n";
+        textDisplayUpdate += "cid : " + charData.cid.ToString() + "\n";
+        textDisplayUpdate += "uid : " + charData.uid.ToString() + "\n";
+        textDisplayUpdate += "slotNo : " + charData.slotNo.ToString() + "\n";
+        textDisplayUpdate += "typeNo : " + charData.typeNo.ToString() + "\n";
+        textDisplayUpdate += "level : " + charData.level.ToString() + "\n";
+        textDisplayUpdate += "tier : " + charData.tier.ToString() + "\n";
+        textDisplayUpdate += "regDate : " + charData.regDate + "\n";
+        
+        MSG.TierupCharReq req = new MSG.TierupCharReq();
+        req.slotNo = slotNo;
+        _netClient.SendPacket(MSG.MsgId.TIERUPCHAR_REQ, req);
+    }
+
+
+    public void OnButtonAutoPlayDungeonReq()
+    {
+        Debug.Log("OnButtonAutoPlayDungeonReq");
+        textDisplayUpdate = "OnButtonAutoPlayDungeonReq";
     }
 
     public void OnConnected(SocketError errorCode)
     {
-        Debug.Log("OnConnected");
-        textDisplayUpdate = "OnConnected";
+        Debug.Log("OnConnected : " + errorCode);
+        textDisplayUpdate = "OnConnected : " + errorCode;
 
         MSG.LoginReq req = new MSG.LoginReq();
         //req.name = NetData.Instance.GetUserName();
@@ -351,6 +442,7 @@ public class NetControlPanel : MonoBehaviour, NetHandler
         MSG.PlayDungeonAns ans = ProtoBuf.Serializer.Deserialize<MSG.PlayDungeonAns>(stream);
 
         Debug.Log("OnMessage_PlayDungeon_Ans : " + ans.err);
+        textDisplayUpdate = "";
 
         foreach (var battle in ans.battles)
         {
@@ -370,6 +462,7 @@ public class NetControlPanel : MonoBehaviour, NetHandler
                 var result = target.result;
 
                 Debug.Log("battle : [team: " + team + ", srcno:" + srcNo + ", targetNo:" + targetNo + ", damage:" + damage + ", result:" + result + "]");
+                textDisplayUpdate += "battle : [team: " + team + ", srcno:" + srcNo + ", targetNo:" + targetNo + ", damage:" + damage + ", result:" + result + "]\n";
             }
         }
 
@@ -384,6 +477,7 @@ public class NetControlPanel : MonoBehaviour, NetHandler
             var regDate = character.regDate;
 
             Debug.Log("char : [cid" + cid + ", uid" + uid + ", slotNo" + slotNo + ", typeNo" + typeNo + ", level" + level + ", tier" + tier + ", regDate" + regDate + "]");
+            textDisplayUpdate += "char : [cid" + cid + ", uid" + uid + ", slotNo" + slotNo + ", typeNo" + typeNo + ", level" + level + ", tier" + tier + ", regDate" + regDate + "]\n";
         }
 
         foreach (var mob in ans.mobs)
@@ -397,21 +491,83 @@ public class NetControlPanel : MonoBehaviour, NetHandler
             var regDate = mob.regDate;
 
             Debug.Log("mob : [cid" + cid + ", uid" + uid + ", slotNo" + slotNo + ", typeNo" + typeNo + ", level" + level + ", tier" + tier + ", regDate" + regDate + "]");
+            textDisplayUpdate += "mob : [cid" + cid + ", uid" + uid + ", slotNo" + slotNo + ", typeNo" + typeNo + ", level" + level + ", tier" + tier + ", regDate" + regDate + "]\n";
         }
     }
 
     public void OnMessage_PlayDungeon_Not(NetClient netClient, MemoryStream stream)
     {
-
+        Debug.Log("OnMessage_PlayDungeon_Not");
+        textDisplayUpdate = "OnMessage_PlayDungeon_Not";
     }
 
     public void OnMessage_LevelUpChar_Ans(NetClient netClient, MemoryStream stream)
     {
+        MSG.LevelupCharAns ans = ProtoBuf.Serializer.Deserialize<MSG.LevelupCharAns>(stream);
 
+        Debug.Log("OnMessage_LevelUpChar_Ans : " + ans.err);
+        textDisplayUpdate = "OnMessage_LevelUpChar_Ans : " + ans.err;
+
+        MSG.CharData_ charData = ans.char_;
+
+        if (charData == null)
+        {
+            return;
+        }
+
+        User user = UserManager.Instance.Find(_sessionKey);
+        
+        for (int i = 0; i < user._data.chars.Count; i++)
+        {
+            if (user._data.chars[i].slotNo == charData.slotNo)
+            {
+                user._data.chars[i] = charData;
+                break;
+            }
+        }
+
+        textDisplayUpdate += "\n";
+        textDisplayUpdate += "cid : " + charData.cid.ToString() + "\n";
+        textDisplayUpdate += "uid : " + charData.uid.ToString() + "\n";
+        textDisplayUpdate += "slotNo : " + charData.slotNo.ToString() + "\n";
+        textDisplayUpdate += "typeNo : " + charData.typeNo.ToString() + "\n";
+        textDisplayUpdate += "level : " + charData.level.ToString() + "\n";
+        textDisplayUpdate += "tier : " + charData.tier.ToString() + "\n";
+        textDisplayUpdate += "regDate : " + charData.regDate + "\n";
     }
 
     public void OnMessage_TierUpChar_Ans(NetClient netClient, MemoryStream stream)
     {
+        MSG.TierupCharAns ans = ProtoBuf.Serializer.Deserialize<MSG.TierupCharAns>(stream);
 
+        Debug.Log("OnMessage_TierUpChar_Ans : " + ans.err);
+        textDisplayUpdate = "OnMessage_TierUpChar_Ans : " + ans.err;
+
+        MSG.CharData_ charData = ans.char_;
+
+        if (charData == null)
+        {
+            return;
+        }
+
+        User user = UserManager.Instance.Find(_sessionKey);
+
+        for (int i = 0; i < user._data.chars.Count; i++)
+        {
+            if (user._data.chars[i].slotNo == charData.slotNo)
+            {
+                user._data.chars[i] = charData;
+                break;
+            }
+        }
+
+        textDisplayUpdate += "\n";
+        textDisplayUpdate += "cid : " + charData.cid.ToString() + "\n";
+        textDisplayUpdate += "uid : " + charData.uid.ToString() + "\n";
+        textDisplayUpdate += "slotNo : " + charData.slotNo.ToString() + "\n";
+        textDisplayUpdate += "typeNo : " + charData.typeNo.ToString() + "\n";
+        textDisplayUpdate += "level : " + charData.level.ToString() + "\n";
+        textDisplayUpdate += "tier : " + charData.tier.ToString() + "\n";
+        textDisplayUpdate += "regDate : " + charData.regDate + "\n";
     }
 }

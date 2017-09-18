@@ -3,7 +3,6 @@ using UnityEngine.UI;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 
-
 public class UIFactory : MonoBehaviour
 {
     private static UIFactory _instance = null;
@@ -31,9 +30,9 @@ public class UIFactory : MonoBehaviour
         }
     }
 
-    public GameObject CreateText(Transform parent, string contents)
+    public GameObject CreateText(Transform parent, string name, string contents)
     {
-        GameObject textObject = new GameObject("Text");
+        GameObject textObject = new GameObject(name);
         textObject.AddComponent<CanvasRenderer>();
         Text text = textObject.AddComponent<Text>();
         text.text = contents;
@@ -50,9 +49,9 @@ public class UIFactory : MonoBehaviour
         return textObject;
     }
 
-    public GameObject CreateText(Transform parent, string contents, Rect rect, UnityAction<Text> setEvent)
+    public GameObject CreateText(Transform parent, string name, string contents, Rect rect, UnityAction<Text> setEvent)
     {
-        GameObject textObject = new GameObject("Text");
+        GameObject textObject = new GameObject(name);
         textObject.AddComponent<CanvasRenderer>();
         Text text = textObject.AddComponent<Text>();
         text.text = contents;
@@ -99,9 +98,38 @@ public class UIFactory : MonoBehaviour
         RectTransform rectTransform = buttonObject.GetComponent<RectTransform>();
         rectTransform.localPosition = rect.position;
         rectTransform.sizeDelta = rect.size;
-        CreateText(buttonObject.transform, name);
+        CreateText(buttonObject.transform, "Text", name);
 
         return buttonObject;
+    }
+
+    public GameObject CreateInputField(Transform parent, string name, Rect rect, UnityAction<InputField> setEvent)
+    {
+        GameObject inputFieldObject = new GameObject(name);
+        inputFieldObject.AddComponent<CanvasRenderer>();
+        Image image = inputFieldObject.AddComponent<Image>();
+        image.sprite = UnityEditor.AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UISprite.psd");
+        image.type = Image.Type.Sliced;
+        RectTransform rectTransform = inputFieldObject.GetComponent<RectTransform>();
+        rectTransform.localPosition = new Vector2(rect.x, rect.y);
+        rectTransform.sizeDelta = new Vector2(rect.width, rect.height);
+        InputField inputField = inputFieldObject.AddComponent<InputField>();
+        GameObject placeHolderObject = CreateText(inputFieldObject.transform, "Placeholder", name);
+        GameObject textObject = CreateText(inputFieldObject.transform, "Text", "");
+        Text placeHolder = placeHolderObject.GetComponent<Text>();
+        //placeHolder.alignment = TextAnchor.MiddleLeft;
+        placeHolder.font = Resources.GetBuiltinResource<Font>("Arial.ttf");// UnityEditor.AssetDatabase.GetBuiltinExtraResource<Font>("UI/Skin/Arial.psd");
+        placeHolder.color = Color.gray;
+        Text text = textObject.GetComponent<Text>();
+        //text.alignment = TextAnchor.MiddleLeft;
+        text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");// UnityEditor.AssetDatabase.GetBuiltinExtraResource<Font>("UI/Skin/Arial.psd");
+        text.color = Color.black;
+        inputField.placeholder = placeHolder;
+        inputField.textComponent = text;
+        inputFieldObject.transform.SetParent(parent, false);
+        setEvent(inputField);
+  
+        return inputFieldObject;
     }
 
     public Rect GetRectGrid(Rect panelRect, int rowCount, int columnCount, int rowIndex, int columnIndex)
