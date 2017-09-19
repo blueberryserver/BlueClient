@@ -103,7 +103,7 @@ public class UIFactory : MonoBehaviour
         return buttonObject;
     }
 
-    public GameObject CreateInputField(Transform parent, string name, Rect rect, UnityAction<InputField> setEvent)
+    public GameObject CreateInputField(Transform parent, string name, string contents, Rect rect, UnityAction<InputField> setEvent)
     {
         GameObject inputFieldObject = new GameObject(name);
         inputFieldObject.AddComponent<CanvasRenderer>();
@@ -114,6 +114,7 @@ public class UIFactory : MonoBehaviour
         rectTransform.localPosition = new Vector2(rect.x, rect.y);
         rectTransform.sizeDelta = new Vector2(rect.width, rect.height);
         InputField inputField = inputFieldObject.AddComponent<InputField>();
+        inputField.text = contents;
         GameObject placeHolderObject = CreateText(inputFieldObject.transform, "Placeholder", name);
         GameObject textObject = CreateText(inputFieldObject.transform, "Text", "");
         Text placeHolder = placeHolderObject.GetComponent<Text>();

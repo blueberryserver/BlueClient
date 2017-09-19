@@ -15,13 +15,15 @@ public class NetSimulator : MonoBehaviour
     // client control panel
     public Rect _clientControlPanelRect = new Rect();
     public Rect _clientControlPanelButtonRect = new Rect();
+    // user data
     
     void Start()
     {
         //SettingSinglePanel();
         //SettingMultiPanel();
         //SettingSinglePanelTest();
-        SettingSinglePanelProtocolTest();
+        SettingMultiPanelAutoTest();
+        //SettingSinglePanelProtocolTest();
     }
 
     void SettingSinglePanel()
@@ -141,13 +143,111 @@ public class NetSimulator : MonoBehaviour
         netControlPanel.OnButtonLogin();
     }
 
-    void SettingSinglePanelProtocolTest()
+    void SettingMultiPanelAutoTest()
     {
         // 전체 화면 크기
         _simulatorRect.position = Vector3.zero;
         _simulatorRect.size = new Vector2(Screen.width, Screen.height);
 
         // 메인 제어판 생성
+        _mainControlPanelRect = _simulatorRect;
+        GameObject mainControlPanel = UIFactory.Instance.CreatePanel(transform, "MainControlPanel", _mainControlPanelRect);
+
+        int userCount = 10;
+        int userPosIndex = 0;
+        int protoCount = 5;
+        int protoPosIndex = 0;
+        Rect protocolPanelRect = new Rect();
+        GameObject protocolPanel = null;
+        NetControlPanel clientPanel = null;
+
+        // 클라이언트 패널 생성
+        for (int i = 0; i < userCount; i++)
+        {
+            protocolPanelRect = UIFactory.Instance.GetRectVertical(_mainControlPanelRect, userCount + 1, userPosIndex++);
+            clientPanel = AddNetControlPanel(mainControlPanel.transform, "Panel", protocolPanelRect);
+            UIFactory.Instance.CreateText(mainControlPanel.transform, "Text", "Client", protocolPanelRect, clientPanel.SetTextDisplay);
+        }
+
+        // Regist & Create Char & Login & AutoTest
+        protocolPanelRect = UIFactory.Instance.GetRectVertical(_mainControlPanelRect, userCount + 1, userPosIndex++);
+        protocolPanel = UIFactory.Instance.CreatePanel(mainControlPanel.transform, "Panel", protocolPanelRect);
+        UIFactory.Instance.CreateButton(protocolPanel.transform, "Regist", UIFactory.Instance.GetRectHorizontal(protocolPanelRect, protoCount, protoPosIndex++), () =>
+        {
+            ulong uid = 100;
+            string name = "user";
+
+            // Regist User
+            foreach (NetControlPanel panel in _netControlPanelList)
+            {
+                string ip = "13.124.76.58";
+                ushort port = 20000;
+                User user = new User();
+                user._data.groupName = "korea0";
+                user._data.language = "kr";
+                user._data.platform = MSG.PlatForm.ANDROID;
+                user._data.regDate = "2017-09-11 11:52:52";
+                user._data.did = "abcd";
+                user._data.name = name + uid;
+                user._data.uid = 0;
+                user._data.vc1 = 10000000;
+                user._data.vc2 = 10000000;
+                user._data.vc3 = 10000000;
+                uid++;
+
+                panel.Regist(ip, port, user);
+            }
+        });
+        UIFactory.Instance.CreateButton(protocolPanel.transform, "Login", UIFactory.Instance.GetRectHorizontal(protocolPanelRect, protoCount, protoPosIndex++), () =>
+        {
+            // Regist User & Create Char
+            foreach (NetControlPanel panel in _netControlPanelList)
+            {
+                string ip = "13.124.76.58";
+                ushort port = 20000;
+                string id = panel.netData.userId;
+                panel.Login(ip, port, id);
+            }
+        });
+        UIFactory.Instance.CreateButton(protocolPanel.transform, "CreateChar", UIFactory.Instance.GetRectHorizontal(protocolPanelRect, protoCount, protoPosIndex++), () =>
+        {
+            int charNo = 0;
+
+            // Create Char
+            foreach (NetControlPanel panel in _netControlPanelList)
+            {
+                int no = charNo + 1;
+                charNo = (charNo + 1) % 2;
+
+                panel.CreateChar(no);
+            }
+        });
+        UIFactory.Instance.CreateButton(protocolPanel.transform, "Logout", UIFactory.Instance.GetRectHorizontal(protocolPanelRect, protoCount, protoPosIndex++), () =>
+        {
+            foreach (NetControlPanel panel in _netControlPanelList)
+            {
+                panel.Logout();
+            }
+        });
+        UIFactory.Instance.CreateButton(protocolPanel.transform, "Logout", UIFactory.Instance.GetRectHorizontal(protocolPanelRect, protoCount, protoPosIndex++), () =>
+        {
+            foreach (NetControlPanel panel in _netControlPanelList)
+            {
+                panel.Logout();
+            }
+        });
+
+        // 자동 로그인
+        //netControlPanel.OnButtonLogin();
+    }
+
+    void SettingSinglePanelProtocolTest()
+    {
+        // 전체 화면 크기
+        _simulatorRect.position = Vector3.zero;
+        _simulatorRect.size = new Vector2(Screen.width, Screen.height);
+
+        // 메인 패널 생성
         _mainControlPanelRect = _simulatorRect;
         NetControlPanel mainControlPanel = AddNetControlPanel(transform, "MainControlPanel", _mainControlPanelRect);
         Rect displayPanelRectUpper = UIFactory.Instance.GetRectVertical(_mainControlPanelRect, 5, 0);
@@ -170,8 +270,12 @@ public class NetSimulator : MonoBehaviour
 
         // LoginReq
         protocolPanelRect = UIFactory.Instance.GetRectVertical(subPanelRect, protocolCount, posIndex++);
-        //protocolPanel = UIFactory.Instance.CreatePanel(subPanel.transform, "Panel", protocolPanelRect);
-        UIFactory.Instance.CreateButton(subPanel.transform, "LoginReq", protocolPanelRect, mainControlPanel.OnButtonLogin);
+        protocolPanel = UIFactory.Instance.CreatePanel(subPanel.transform, "Panel", protocolPanelRect);
+        UIFactory.Instance.CreateInputField(protocolPanel.transform, "IP", "13.124.76.58", UIFactory.Instance.GetRectHorizontal(protocolPanelRect, 4, 0), mainControlPanel.AddInputField);
+        UIFactory.Instance.CreateInputField(protocolPanel.transform, "Port", "20000", UIFactory.Instance.GetRectHorizontal(protocolPanelRect, 4, 1), mainControlPanel.AddInputField);
+        UIFactory.Instance.CreateInputField(protocolPanel.transform, "ID", "katarn30", UIFactory.Instance.GetRectHorizontal(protocolPanelRect, 4, 2), mainControlPanel.AddInputField);
+        UIFactory.Instance.CreateButton(protocolPanel.transform, "LoginReq", UIFactory.Instance.GetRectHorizontal(protocolPanelRect, 4, 3), mainControlPanel.OnButtonLogin);
+        //UIFactory.Instance.CreateButton(subPanel.transform, "LoginReq", protocolPanelRect, mainControlPanel.OnButtonLogin);
 
         // LogoutReq
         protocolPanelRect = UIFactory.Instance.GetRectVertical(subPanelRect, protocolCount, posIndex++);
@@ -181,20 +285,20 @@ public class NetSimulator : MonoBehaviour
         // PlayDungeonReq
         protocolPanelRect = UIFactory.Instance.GetRectVertical(subPanelRect, protocolCount, posIndex++);
         protocolPanel = UIFactory.Instance.CreatePanel(subPanel.transform, "Panel", protocolPanelRect);
-        UIFactory.Instance.CreateInputField(protocolPanel.transform, "PlayDungeonReq.dungeonNo", UIFactory.Instance.GetRectHorizontal(protocolPanelRect, 3, 0), mainControlPanel.AddInputField);
-        UIFactory.Instance.CreateInputField(protocolPanel.transform, "PlayDungeonReq.tier", UIFactory.Instance.GetRectHorizontal(protocolPanelRect, 3, 1), mainControlPanel.AddInputField);
+        UIFactory.Instance.CreateInputField(protocolPanel.transform, "PlayDungeonReq.dungeonNo", "", UIFactory.Instance.GetRectHorizontal(protocolPanelRect, 3, 0), mainControlPanel.AddInputField);
+        UIFactory.Instance.CreateInputField(protocolPanel.transform, "PlayDungeonReq.tier", "", UIFactory.Instance.GetRectHorizontal(protocolPanelRect, 3, 1), mainControlPanel.AddInputField);
         UIFactory.Instance.CreateButton(protocolPanel.transform, "PlayDungeonReq", UIFactory.Instance.GetRectHorizontal(protocolPanelRect, 3, 2), mainControlPanel.OnButtonPlayDungeonReq);
 
         // LevelupCharReq
         protocolPanelRect = UIFactory.Instance.GetRectVertical(subPanelRect, protocolCount, posIndex++);
         protocolPanel = UIFactory.Instance.CreatePanel(subPanel.transform, "Panel", protocolPanelRect);
-        UIFactory.Instance.CreateInputField(protocolPanel.transform, "LevelupCharReq.slotNo", UIFactory.Instance.GetRectHorizontal(protocolPanelRect, 2, 0), mainControlPanel.AddInputField);
+        UIFactory.Instance.CreateInputField(protocolPanel.transform, "LevelupCharReq.slotNo", "", UIFactory.Instance.GetRectHorizontal(protocolPanelRect, 2, 0), mainControlPanel.AddInputField);
         UIFactory.Instance.CreateButton(protocolPanel.transform, "LevelupCharReq", UIFactory.Instance.GetRectHorizontal(protocolPanelRect, 2, 1), mainControlPanel.OnButtonLevelupCharReq);
 
         // TierupCharReq
         protocolPanelRect = UIFactory.Instance.GetRectVertical(subPanelRect, protocolCount, posIndex++);
         protocolPanel = UIFactory.Instance.CreatePanel(subPanel.transform, "Panel", protocolPanelRect);
-        UIFactory.Instance.CreateInputField(protocolPanel.transform, "TierupCharReq.slotNo", UIFactory.Instance.GetRectHorizontal(protocolPanelRect, 2, 0), mainControlPanel.AddInputField);
+        UIFactory.Instance.CreateInputField(protocolPanel.transform, "TierupCharReq.slotNo", "", UIFactory.Instance.GetRectHorizontal(protocolPanelRect, 2, 0), mainControlPanel.AddInputField);
         UIFactory.Instance.CreateButton(protocolPanel.transform, "TierupCharReq", UIFactory.Instance.GetRectHorizontal(protocolPanelRect, 2, 1), mainControlPanel.OnButtonTierupCharReq);
     }
 

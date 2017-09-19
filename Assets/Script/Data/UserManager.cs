@@ -53,7 +53,7 @@ public class UserManager// : MonoBehaviour {
     //{
 
     //}
-    User FindByUid(ulong uid_)
+    public User FindByUid(ulong uid_)
     {
         foreach (var user in _jobsBySessionKey)
         {
@@ -65,7 +65,7 @@ public class UserManager// : MonoBehaviour {
 
         return new User();
     }
-    User FindByName(string name_)
+    public User FindByName(string name_)
     {
         foreach (var user in _jobsBySessionKey)
         {

@@ -85,63 +85,71 @@ public class NetHanderInitializer
 
 public class NetData
 {
-    int _userMax = 0;
-    int _userCurrIndex = 0;
-    List<string> _userNameList = new List<string>();
-    string _ip = "";
-    ushort _port = 0;
-
-    private static NetData _instance = null;
-    public static NetData Instance
+    string _userId = "";
+    public string userId
     {
         get
         {
-            if (_instance == null)
-            {
-                _instance = new NetData();
-            }
-
-            return _instance;
+            return _userId;
         }
-    }
-
-    public NetData()
-    {
-        _userMax = 500;
-        for (int i = 0; i < _userMax; i++)
+        set
         {
-            _userNameList.Add("iii" + i);
+            _userId = value;
         }
-        _ip = "13.124.76.58";
-        _port = 20000;
     }
-
-    public int GetUserCount()
+    string _ip = "";
+    public string ip
     {
-        return _userNameList.Count;
+        get
+        {
+            return _ip;
+        }
+        set
+        {
+            _ip = value;
+        }
     }
-
-    public string GetUserName()
+    ushort _port = 0;
+    public ushort port
     {
-        int index = _userCurrIndex;
-        _userCurrIndex++;
-        return _userNameList[index];
+        get
+        {
+            return _port;
+        }
+        set
+        {
+            _port = value;
+        }
     }
-    public string GetIP()
+    string _sessionKey = "";
+    public string sessionKey
     {
-        return _ip;
+        get
+        {
+            return _sessionKey;
+        }
+        set
+        {
+            _sessionKey = value;
+        }
     }
-
-    public ushort GetPort()
+    User _user = null;
+    public User user
     {
-        return _port;
+        get
+        {
+            return _user;
+        }
+        set
+        {
+            _user = value;
+        }
     }
 }
 
 public class NetControlPanel : MonoBehaviour, NetHandler
 {
     NetClient _netClient = null;
-    string _sessionKey = "";
     public NetClient netClient
     {
         get
@@ -151,6 +159,18 @@ public class NetControlPanel : MonoBehaviour, NetHandler
         set
         {
             _netClient = value;
+        }
+    }
+    NetData _netData = new NetData();
+    public NetData netData
+    {
+        get
+        {
+            return _netData;
+        }
+        set
+        {
+            _netData = value;
         }
     }
     Text _textDisplay = null;
@@ -202,7 +222,7 @@ public class NetControlPanel : MonoBehaviour, NetHandler
         }
         else
         {
-            _image.color = _isLogin ? Color.green : Color.red;
+            _image.color = _netClient.IsConnected() ? Color.green : Color.red;
         }
     }
 
@@ -216,14 +236,71 @@ public class NetControlPanel : MonoBehaviour, NetHandler
         _inputFieldList.Add(inputField);
     }
 
+    public void Regist(string ip, ushort port, User user)
+    {
+        Debug.Log("Regist");
+
+        _netData.ip = ip;
+        _netData.port = port;
+        _netData.userId = user._data.name;
+
+        netData.user = user;
+        
+        if (_netClient.IsConnected())
+        {
+            _netClient.Close();
+        }
+
+        _isLogin = false;
+
+        _netClient.AsyncConnect(_netData.ip, _netData.port);
+    }
+
+    public void Login(string ip, ushort port, string id)
+    {
+        Debug.Log("Login");
+
+        _netData.ip = ip;
+        _netData.port = port;
+        _netData.userId = id;
+
+        if (_netClient.IsConnected())
+        {
+            _netClient.Close();
+        }
+
+        _isLogin = true;
+
+        _netClient.AsyncConnect(_netData.ip, _netData.port);
+    }
+
+    public void Logout()
+    {
+        Debug.Log("Logout");
+
+        _netClient.Close();
+    }
+
+    public void CreateChar(int charNo)
+    {
+        Debug.Log("CreateChar");
+
+        MSG.CreateCharReq req = new MSG.CreateCharReq();
+        req.charNo = (uint)charNo;
+        _netClient.SendPacket(MSG.MsgId.CREATECHAR_REQ, req);
+    }
+
     public void OnButtonLogin()
     {
         Debug.Log("OnButtonLogin");
-        //_netClient.AsyncConnect(NetData.Instance.GetIP(), NetData.Instance.GetPort());
-        _netClient.AsyncConnect("13.124.76.58", 20000);
-        //image.color = Color.red;
-    }
 
+        string ip = GetInputFieldText("IP");
+        ushort port = Convert.ToUInt16(GetInputFieldText("Port"));
+        string id = GetInputFieldText("ID");
+
+        Login(ip, port, id);
+
+    }
     public void OnButtonLogout()
     {
         Debug.Log("OnButtonLogout");
@@ -246,7 +323,7 @@ public class NetControlPanel : MonoBehaviour, NetHandler
         Debug.Log("OnButtonLevelupCharReq");
         textDisplayUpdate = "OnButtonLevelupCharReq";
 
-        User user = UserManager.Instance.Find(_sessionKey);
+        User user = UserManager.Instance.Find(_netData.sessionKey);
 
         uint slotNo = Convert.ToUInt32(GetInputFieldText("LevelupCharReq.slotNo"));
         MSG.CharData_ charData = null;
@@ -278,7 +355,7 @@ public class NetControlPanel : MonoBehaviour, NetHandler
         Debug.Log("OnButtonTierupCharReq");
         textDisplayUpdate = "OnButtonTierupCharReq";
 
-        User user = UserManager.Instance.Find(_sessionKey);
+        User user = UserManager.Instance.Find(_netData.sessionKey);
 
         uint slotNo = Convert.ToUInt32(GetInputFieldText("TierupCharReq.slotNo"));
         MSG.CharData_ charData = null;
@@ -317,29 +394,33 @@ public class NetControlPanel : MonoBehaviour, NetHandler
         Debug.Log("OnConnected : " + errorCode);
         textDisplayUpdate = "OnConnected : " + errorCode;
 
-        MSG.LoginReq req = new MSG.LoginReq();
-        //req.name = NetData.Instance.GetUserName();
-        req.name = "katarn30";
-        _netClient.SendPacket(MSG.MsgId.LOGIN_REQ, req);
+        if (_isLogin)
+        {
+            MSG.LoginReq req = new MSG.LoginReq();
+            req.name = _netData.userId;
+            _netClient.SendPacket(MSG.MsgId.LOGIN_REQ, req);
+        }
+        else
+        {
+            MSG.RegistReq req = new MSG.RegistReq();
+            req.data = netData.user._data;
+            _netClient.SendPacket(MSG.MsgId.REGIST_REQ, req);
+        }
     }
 
     public void OnClosed()
     {
         Debug.Log("OnClosed");
         textDisplayUpdate = "OnClosed";
-
-        _isLogin = false;
-
-        UserManager.Instance.Remove(_sessionKey);
+        
+        UserManager.Instance.Remove(_netData.sessionKey);
     }
 
     public void OnMessage_Login_Ans(NetClient netClient, MemoryStream stream)
     {
         Debug.Log("OnMessage_Login_Ans");
         textDisplayUpdate = "OnMessage_Login_Ans";
-
-        _isLogin = true;
-
+        
         MSG.LoginAns ans = ProtoBuf.Serializer.Deserialize<MSG.LoginAns>(stream);
 
         User user = new User();
@@ -348,7 +429,7 @@ public class NetControlPanel : MonoBehaviour, NetHandler
         user._sessionKey = ans.sessionKey;
         UserManager.Instance.Add(user);
 
-        _sessionKey = user._sessionKey;
+        _netData.sessionKey = user._sessionKey;
     }
 
     public void OnMessage_Pong_Ans(NetClient netClient, MemoryStream stream)
@@ -424,7 +505,10 @@ public class NetControlPanel : MonoBehaviour, NetHandler
 
     public void OnMessage_CreateChar_Ans(NetClient netClient, MemoryStream stream)
     {
+        MSG.CreateCharAns ans = ProtoBuf.Serializer.Deserialize<MSG.CreateCharAns>(stream);
 
+        Debug.Log("OnMessage_CreateChar_Ans : " + ans.err);
+        textDisplayUpdate = "OnMessage_CreateChar_Ans";
     }
 
     public void OnMessage_Contents_Not(NetClient netClient, MemoryStream stream)
@@ -515,7 +599,7 @@ public class NetControlPanel : MonoBehaviour, NetHandler
             return;
         }
 
-        User user = UserManager.Instance.Find(_sessionKey);
+        User user = UserManager.Instance.Find(_netData.sessionKey);
         
         for (int i = 0; i < user._data.chars.Count; i++)
         {
@@ -550,7 +634,7 @@ public class NetControlPanel : MonoBehaviour, NetHandler
             return;
         }
 
-        User user = UserManager.Instance.Find(_sessionKey);
+        User user = UserManager.Instance.Find(_netData.sessionKey);
 
         for (int i = 0; i < user._data.chars.Count; i++)
         {
