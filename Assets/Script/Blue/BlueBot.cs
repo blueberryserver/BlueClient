@@ -13,23 +13,39 @@ public class BlueBot : BaseGameEntity, NetHandler
     StateManager<BlueBot> _stateMachine = null;
     //E_LOCATION_TYPE _location;
     NetClient _netClient;
-    string _ip = "13.124.76.58";
-    ushort _port = 20000;
+    string _ip = "";
+    ushort _port = 0;
     BlueUser _user = new BlueUser();
     bool _isConnect;
     bool _isLogin;
     //bool _waitForReceive;
+    Dictionary<State<BlueBot>, float> _actionRateDict = new Dictionary<State<BlueBot>, float>(); 
 
     public BlueBot(int id) : base(id)
     {
         _stateMachine = new StateManager<BlueBot>(this);
         _stateMachine.SetCurrentState(null/*BlueBotConnect.Instance*/);
         _stateMachine.SetGlobalState(null/*BlueBotLogin::Instance()*/);
-        _netClient = NetClientManager.Instance.FindNetClient(id);
+        // NetClient
+        _netClient = NetClientManager.Instance.AddNetClient(id);
+        NetHanderInitializer.Instance.InitNetHandler(_netClient, this);
+        _ip = "13.124.76.58";
+        _port = 20000;
         //_location = E_LOCATION_TYPE.SHACK;
         _isConnect = false;
         _isLogin = false;
         //_waitForReceive = false;
+        //_actionRateDict.Add(MSG.MsgId.LOGIN_REQ, 1f);
+        //_actionRateDict.Add(MSG.MsgId.REGIST_REQ, 1f);
+        //_actionRateDict.Add(MSG.MsgId.CHAT_REQ, 0f);
+        //_actionRateDict.Add(MSG.MsgId.CREATECHATROOM_REQ, 0f);
+        //_actionRateDict.Add(MSG.MsgId.INVITECHATROOM_REQ, 0f);
+        //_actionRateDict.Add(MSG.MsgId.ENTERCHATROOM_REQ, 0f);
+        //_actionRateDict.Add(MSG.MsgId.LEAVECHATROOM_REQ, 0f);
+        //_actionRateDict.Add(MSG.MsgId.CREATECHAR_REQ, 0f);
+        _actionRateDict.Add(BlueBotPlayDungeon.Instance, 1f);
+        _actionRateDict.Add(BlueBotLevelup.Instance, 1f);
+        _actionRateDict.Add(BlueBotTierup.Instance, 1f);
     }
 
     public override void Update()
@@ -80,6 +96,73 @@ public class BlueBot : BaseGameEntity, NetHandler
         return _isLogin;
     }
 
+    public float GetActionRate(State<BlueBot> state)
+    {
+        if (_actionRateDict.ContainsKey(state) == false)
+        {
+            return 0;
+        }
+
+        return _actionRateDict[state];
+    }
+
+    public State<BlueBot> SelectAction()
+    {
+        float totalRate = 0.0f;
+        foreach (KeyValuePair<State<BlueBot>, float> pair in _actionRateDict)
+        {
+            totalRate += pair.Value;
+        }
+
+        float selectRate = UnityEngine.Random.Range(0f, totalRate);
+        float sumRate = 0.0f;
+        foreach (KeyValuePair<State<BlueBot>, float> pair in _actionRateDict)
+        {
+            sumRate += pair.Value;
+            if (selectRate <= sumRate)
+            {
+                return pair.Key;
+            }
+        }
+
+        return null;
+    }
+
+    public void SetDisplayColor(Color color)
+    {
+        ControlPanel controlPanel = ControlPanelManager.Instance.FindControlPanel(_id);
+        controlPanel.SetPanelImageColor(color);
+    }
+    public void SetDisplayText(string text)
+    {
+        ControlPanel controlPanel = ControlPanelManager.Instance.FindControlPanel(_id);
+        controlPanel.SetTextDisplayUpdate(text);
+    }
+    public void Display()
+    {
+        string text = "";
+
+        text += "id : " + _id + "\n";
+        text += "name : " + _user._data.name + "\n";
+        text += "vc1 : " + _user._data.vc1 + "\n";
+        text += "vc2 : " + _user._data.vc2 + "\n";
+        text += "vc3 : " + _user._data.vc3 + "\n";
+
+        if (_user._data.chars != null && 0 < _user._data.chars.Count)
+        {
+            text += "slot no : " + _user._data.chars[0].slotNo + "\n";
+            text += "level : " + _user._data.chars[0].level + "\n";
+            text += "tier : " + _user._data.chars[0].tier + "\n";
+        }
+
+        if (_user._data.lastDungeon != null)
+        {
+            text += "dungeon no : " + _user._data.lastDungeon.dungeonNo + "\n";
+            text += "dungeon tier : " + _user._data.lastDungeon.dungeonTier + "\n";
+        }
+
+        SetDisplayText(text);
+    }
     //public void SetWaitForReceive(bool waitForReceive)
     //{
     //    _waitForReceive = waitForReceive;
@@ -121,10 +204,81 @@ public class BlueBot : BaseGameEntity, NetHandler
         _netClient.SendPacket(MSG.MsgId.LOGIN_REQ, req);
     }
 
+    public void PlayDungeon()
+    {
+        Debug.Log("PlayDungeon");
+
+        if (_netClient.IsConnected() == false)
+        {
+            Debug.Log("Not connected");
+            return;
+        }
+
+        MSG.PlayDungeonReq req = new MSG.PlayDungeonReq();
+        
+        uint dungeonNo = 0;
+        uint dungeonTier = 0;
+
+        if (_user._data.lastDungeon != null)
+        {
+            dungeonNo = _user._data.lastDungeon.dungeonNo;
+            dungeonTier = _user._data.lastDungeon.dungeonTier;
+        }
+
+        if (0 <= dungeonNo && dungeonNo < 20)
+        {
+            dungeonNo++;
+        }
+        else
+        {
+            dungeonNo = 0;
+            dungeonTier++;
+        }
+
+        req.dungeonNo = dungeonNo;
+        req.tier = dungeonTier;
+        _netClient.SendPacket(MSG.MsgId.PLAYDUNGEON_REQ, req);
+    }
+
+    public void LevelupChar()
+    {
+        Debug.Log("LevelupChar");
+
+        if (_netClient.IsConnected() == false)
+        {
+            Debug.Log("Not connected");
+            return;
+        }
+
+        MSG.LevelupCharReq req = new MSG.LevelupCharReq();
+        req.slotNo = 0;
+        _netClient.SendPacket(MSG.MsgId.LEVELUPCHAR_REQ, req);
+    }
+
+    public void TierupChar()
+    {
+        Debug.Log("TierupChar");
+
+        if (_netClient.IsConnected() == false)
+        {
+            Debug.Log("Not connected");
+            return;
+        }
+
+        MSG.TierupCharReq req = new MSG.TierupCharReq();
+        req.slotNo = 0;
+        _netClient.SendPacket(MSG.MsgId.TIERUPCHAR_REQ, req);
+    }
+
     public void OnConnected(NetClient netClient, SocketError errorCode)
     {
         Debug.Log("OnConnected : " + errorCode);
         //textDisplayUpdate = "OnConnected : " + errorCode;
+
+        if (SocketError.Success != errorCode)
+        {
+            return;
+        }
 
         int key = NetClientManager.Instance.FindKey(netClient);
         string name = "user" + key;
@@ -138,7 +292,9 @@ public class BlueBot : BaseGameEntity, NetHandler
     }
     public void OnClosed(NetClient netClient)
     {
-
+        BlueUserManager.Instance.Remove(_user._sessionKey);
+        _isConnect = false;
+        _isLogin = false;
     }
     public void OnMessage_Login_Ans(NetClient netClient, MemoryStream stream)
     {
@@ -147,16 +303,17 @@ public class BlueBot : BaseGameEntity, NetHandler
 
         MSG.LoginAns ans = ProtoBuf.Serializer.Deserialize<MSG.LoginAns>(stream);
 
-        BlueUser user = new BlueUser();
-        user._data = ans.data;
-        user._session = netClient;
-        user._sessionKey = ans.sessionKey;
-        BlueUserManager.Instance.Add(user);
+        if (MSG.ErrorCode.ERR_SUCCESS == ans.err)
+        {
+            _user._data = ans.data;
+            _user._session = netClient;
+            _user._sessionKey = ans.sessionKey;
+            BlueUserManager.Instance.Add(_user);
 
-        int key = NetClientManager.Instance.FindKey(netClient);
-        ControlPanel controlPanel = ControlPanelManager.Instance.FindControlPanel(key);
-        controlPanel.SetPanelImageColor(Color.green);
-        //controlPanel.SetTextDisplayUpdate("abcd");
+            SetDisplayColor(Color.green);
+            Display();
+            _isLogin = true;
+        }
     }
     public void OnMessage_Pong_Ans(NetClient netClient, MemoryStream stream)
     {
@@ -209,14 +366,78 @@ public class BlueBot : BaseGameEntity, NetHandler
     }
     public void OnMessage_PlayDungeon_Ans(NetClient netClient, MemoryStream stream)
     {
+        MSG.PlayDungeonAns ans = ProtoBuf.Serializer.Deserialize<MSG.PlayDungeonAns>(stream);
+
+        Debug.Log("OnMessage_PlayDungeon_Ans : " + ans.err);
+        
+        // ans 처리
+        if (MSG.ErrorCode.ERR_SUCCESS == ans.err)
+        {
+            uint dungeonNo = 0;
+            uint dungeonTier = 0;
+
+            if (_user._data.lastDungeon != null)
+            {
+                dungeonNo = _user._data.lastDungeon.dungeonNo;
+                dungeonTier = _user._data.lastDungeon.dungeonTier;
+            }
+
+            if (0 <= dungeonNo && dungeonNo < 20)
+            {
+                dungeonNo++;
+            }
+            else
+            {
+                dungeonNo = 0;
+                dungeonTier++;
+            }
+
+            _user._data.lastDungeon.dungeonNo = dungeonNo;
+            _user._data.lastDungeon.dungeonTier = dungeonTier;
+        }
+
+        Display();
+
+        // state 처리
+        MessageDispatcher.Instance.DispatchMessage(_id, _id, (int)MSG.MsgId.PLAYDUNGEON_ANS, 0, ans);
     }
     public void OnMessage_PlayDungeon_Not(NetClient netClient, MemoryStream stream)
     {
     }
     public void OnMessage_LevelUpChar_Ans(NetClient netClient, MemoryStream stream)
     {
+        MSG.LevelupCharAns ans = ProtoBuf.Serializer.Deserialize<MSG.LevelupCharAns>(stream);
+
+        Debug.Log("OnMessage_LevelUpChar_Ans : " + ans.err);
+
+        // ans 처리
+        if (MSG.ErrorCode.ERR_SUCCESS == ans.err)
+        {
+            int slotNo = (int)ans.char_.slotNo;
+            _user._data.chars[slotNo] = ans.char_;
+        }
+
+        Display();
+
+        // state 처리
+        MessageDispatcher.Instance.DispatchMessage(_id, _id, (int)MSG.MsgId.LEVELUPCHAR_ANS, 0, ans);
     }
     public void OnMessage_TierUpChar_Ans(NetClient netClient, MemoryStream stream)
     {
+        MSG.TierupCharAns ans = ProtoBuf.Serializer.Deserialize<MSG.TierupCharAns>(stream);
+
+        Debug.Log("OnMessage_TierUpChar_Ans : " + ans.err);
+
+        // ans 처리
+        if (MSG.ErrorCode.ERR_SUCCESS == ans.err)
+        {
+            int slotNo = (int)ans.char_.slotNo;
+            _user._data.chars[slotNo] = ans.char_;
+        }
+
+        Display();
+
+        // state 처리
+        MessageDispatcher.Instance.DispatchMessage(_id, _id, (int)MSG.MsgId.TIERUPCHAR_ANS, 0, ans);
     }
 }

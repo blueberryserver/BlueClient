@@ -24,9 +24,4 @@ public class BaseGameEntity// : MonoBehaviour
     {
         return _id;
     }
-
-    public virtual void HandleMessage(Telegram msg)
-    {
-
-    }
 }

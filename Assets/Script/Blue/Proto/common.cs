@@ -126,6 +126,15 @@ namespace MSG
       get { return _chars; }
     }
   
+
+    private MSG.DungeonData_ _lastDungeon = null;
+    [global::ProtoBuf.ProtoMember(14, IsRequired = false, DataFormat = global::ProtoBuf.DataFormat.Default)]
+    [global::System.ComponentModel.DefaultValue(null)]
+    public MSG.DungeonData_ lastDungeon
+    {
+      get { return _lastDungeon; }
+      set { _lastDungeon = value; }
+    }
   }
   
   [global::ProtoBuf.ProtoContract]
@@ -424,22 +433,38 @@ namespace MSG
   {
     public DungeonData_() {}
     
-    private uint _no;
+    private ulong _uid;
     [global::ProtoBuf.ProtoMember(1, IsRequired = true, DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
-    public uint no
+    public ulong uid
     {
-      get { return _no; }
-      set { _no = value; }
+      get { return _uid; }
+      set { _uid = value; }
     }
-    private uint _tier;
+    private uint _dungeonNo;
     [global::ProtoBuf.ProtoMember(2, IsRequired = true, DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
-    public uint tier
+    public uint dungeonNo
     {
-      get { return _tier; }
-      set { _tier = value; }
+      get { return _dungeonNo; }
+      set { _dungeonNo = value; }
+    }
+    private uint _dungeonTier;
+    [global::ProtoBuf.ProtoMember(3, IsRequired = true, DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    public uint dungeonTier
+    {
+      get { return _dungeonTier; }
+      set { _dungeonTier = value; }
+    }
+
+    private string _updateDate = "";
+    [global::ProtoBuf.ProtoMember(4, IsRequired = false, DataFormat = global::ProtoBuf.DataFormat.Default)]
+    [global::System.ComponentModel.DefaultValue("")]
+    public string updateDate
+    {
+      get { return _updateDate; }
+      set { _updateDate = value; }
     }
     private readonly global::System.Collections.Generic.List<MSG.CharData_> _monsters = new global::System.Collections.Generic.List<MSG.CharData_>();
-    [global::ProtoBuf.ProtoMember(3, DataFormat = global::ProtoBuf.DataFormat.Default)]
+    [global::ProtoBuf.ProtoMember(5, DataFormat = global::ProtoBuf.DataFormat.Default)]
     public global::System.Collections.Generic.List<MSG.CharData_> monsters
     {
       get { return _monsters; }
@@ -516,6 +541,55 @@ namespace MSG
     }
   
   }
+  
+  [global::ProtoBuf.ProtoContract]
+  public partial class DungeonPlayData_
+  {
+    public DungeonPlayData_() {}
+    
+    private ulong _lid;
+    [global::ProtoBuf.ProtoMember(1, IsRequired = true, DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    public ulong lid
+    {
+      get { return _lid; }
+      set { _lid = value; }
+    }
+    private ulong _uid;
+    [global::ProtoBuf.ProtoMember(2, IsRequired = true, DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    public ulong uid
+    {
+      get { return _uid; }
+      set { _uid = value; }
+    }
+    private readonly global::System.Collections.Generic.List<MSG.BattleData_> _battles = new global::System.Collections.Generic.List<MSG.BattleData_>();
+    [global::ProtoBuf.ProtoMember(3, DataFormat = global::ProtoBuf.DataFormat.Default)]
+    public global::System.Collections.Generic.List<MSG.BattleData_> battles
+    {
+      get { return _battles; }
+    }
+  
+    private readonly global::System.Collections.Generic.List<MSG.CharData_> _chars = new global::System.Collections.Generic.List<MSG.CharData_>();
+    [global::ProtoBuf.ProtoMember(4, DataFormat = global::ProtoBuf.DataFormat.Default)]
+    public global::System.Collections.Generic.List<MSG.CharData_> chars
+    {
+      get { return _chars; }
+    }
+  
+    private readonly global::System.Collections.Generic.List<MSG.CharData_> _mobs = new global::System.Collections.Generic.List<MSG.CharData_>();
+    [global::ProtoBuf.ProtoMember(5, DataFormat = global::ProtoBuf.DataFormat.Default)]
+    public global::System.Collections.Generic.List<MSG.CharData_> mobs
+    {
+      get { return _mobs; }
+    }
+  
+    private string _regDate;
+    [global::ProtoBuf.ProtoMember(6, IsRequired = true, DataFormat = global::ProtoBuf.DataFormat.Default)]
+    public string regDate
+    {
+      get { return _regDate; }
+      set { _regDate = value; }
+    }
+  }
   public enum MsgId
     {
       
@@ -587,7 +661,11 @@ namespace MSG
       
       TIERUPCHAR_REQ = 20191,
       
-      TIERUPCHAR_ANS = 20192
+      TIERUPCHAR_ANS = 20192,
+      
+      BATTLELOG_REQ = 20201,
+      
+      BATTLELOG_ANS = 20202
     }
   public enum ErrorCode
     {

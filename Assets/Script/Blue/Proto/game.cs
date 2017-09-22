@@ -290,4 +290,39 @@ namespace MSG
     }
   }
   
+  [global::ProtoBuf.ProtoContract]
+  public partial class BattleLogReq
+  {
+    public BattleLogReq() {}
+    
+    private ulong _lid;
+    [global::ProtoBuf.ProtoMember(1, IsRequired = true, DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    public ulong lid
+    {
+      get { return _lid; }
+      set { _lid = value; }
+    }
+  }
+  
+  [global::ProtoBuf.ProtoContract]
+  public partial class BattleLogAns
+  {
+    public BattleLogAns() {}
+    
+    private MSG.ErrorCode _err;
+    [global::ProtoBuf.ProtoMember(1, IsRequired = true, DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    public MSG.ErrorCode err
+    {
+      get { return _err; }
+      set { _err = value; }
+    }
+    private readonly global::System.Collections.Generic.List<MSG.DungeonPlayData_> _data = new global::System.Collections.Generic.List<MSG.DungeonPlayData_>();
+    [global::ProtoBuf.ProtoMember(2, DataFormat = global::ProtoBuf.DataFormat.Default)]
+    public global::System.Collections.Generic.List<MSG.DungeonPlayData_> data
+    {
+      get { return _data; }
+    }
+  
+  }
+  
 }

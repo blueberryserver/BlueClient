@@ -35,24 +35,24 @@ public class EntityManager : MonoBehaviour
         }
     }
 
-    public void RegisterEntity(int key, BaseGameEntity entity)
+    public void RegisterEntity(int id, BaseGameEntity entity)
     {
-        if (_entityDict.ContainsKey(key))
+        if (_entityDict.ContainsKey(id))
         {
             return;
         }
 
-        _entityDict.Add(key, entity);
+        _entityDict.Add(id, entity);
     }
 
-    public void RemoveEntity(int key)
+    public void RemoveEntity(int id)
     {
-        if (_entityDict.ContainsKey(key) == false)
+        if (_entityDict.ContainsKey(id) == false)
         {
             return;
         }
 
-        _entityDict.Remove(key);
+        _entityDict.Remove(id);
     }
 
     public void RemoveEntity(BaseGameEntity entity)
@@ -74,7 +74,12 @@ public class EntityManager : MonoBehaviour
 
     public BaseGameEntity GetEntityFromID(int id)
     {
-        return null;
+        if (_entityDict.ContainsKey(id) == false)
+        {
+            return null;
+        }
+
+        return _entityDict[id];
     }
 
     // Use this for initialization

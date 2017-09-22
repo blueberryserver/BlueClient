@@ -37,14 +37,34 @@ public class NetClientManager : MonoBehaviour
 
     }
 
-    public NetClient CreateNetClient()
+    //public NetClient CreateNetClient()
+    //{
+    //    return gameObject.AddComponent<NetClient>();
+    //}
+
+    public NetClient AddNetClient(int key)
     {
-        return gameObject.AddComponent<NetClient>();
+        if (_netClientDict.ContainsKey(key))
+        {
+            //_netClientDict[key] = netClient;
+            return _netClientDict[key];
+        }
+
+        NetClient netClient = gameObject.AddComponent<NetClient>();
+        _netClientDict.Add(key, netClient);
+
+        return _netClientDict[key];
     }
 
-    public void AddNetClient(int key, NetClient netClient)
+    public void RemoveNetClient(int key)
     {
-        _netClientDict.Add(key, netClient);
+        if (_netClientDict.ContainsKey(key) == false)
+        {
+            return;
+        }
+
+        DestroyObject(_netClientDict[key]); // pooling 방식으로 변경 가능
+        _netClientDict.Remove(key);
     }
 
     public NetClient FindNetClient(int key)

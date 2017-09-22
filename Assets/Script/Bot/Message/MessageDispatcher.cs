@@ -2,12 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum E_MESSAGE_TYPE
-{
-    HI_HONEY_IM_HOME,
-    STEW_READY
-}
-
 public class MessageDispatcher// : MonoBehaviour
 {
     //list.Sort((l, r) => -1 * l.value.CompareTo(r.value)); // (a, b) => a.CompareTo(b
@@ -72,7 +66,7 @@ public class MessageDispatcher// : MonoBehaviour
 
 	private void Discharge(BaseGameEntity receiver, ref Telegram msg)
     {
-        receiver.HandleMessage(msg);
+        receiver.HandleMessage(ref msg);
     }
 }
 

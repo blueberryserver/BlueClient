@@ -55,6 +55,10 @@ public class BlueBotLogin : State<BlueBot>//, NetHandler
     {
         Debug.Log("BlueBotLogin.Execute");
 
+        if (entity.IsLogin())
+        {
+            entity.ChangeState(BlueBotSelectAction.Instance);
+        }
     }
 
     public override void Exit(BlueBot entity)
