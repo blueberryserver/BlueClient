@@ -32,11 +32,23 @@ public class BlueBotLevelup : State<BlueBot>
     {
         Debug.Log("BlueBotLevelup.Enter");
 
-        //State<BlueBot> state = entity.SelectAction();
+        //entity.ChangeState(BlueBotSelectAction.Instance);
+        List<int> slotNoList = new List<int>();
+        slotNoList.Add(0);
+        slotNoList.Add(1);
+        
+        for (int i = 0; i < slotNoList.Count; i++)
+        {
+            int charLevel = entity.GetCharLevel(slotNoList[i]);
+            if (1 <= charLevel && charLevel < 20)
+            {
+                entity.LevelupChar(slotNoList[i]);
+                return;
+            }
+        }
 
-        //entity.ChangeState(state);
-
-        entity.LevelupChar();
+        State<BlueBot> state = entity.SelectAction();
+        entity.ChangeState(state);
     }
 
     public override void Execute(BlueBot entity)

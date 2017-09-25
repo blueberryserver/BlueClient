@@ -95,12 +95,21 @@ public class EntityManager : MonoBehaviour
     // Update is called once per frame
     public void Update()
     {
-        //Thread.Sleep(1000);
+        //if (Time.time <= _delayTime)
+        //{
+        //    return;
+        //}
+        //else
+        //{
+        //    _delayTime = Time.time + 5.0f;
+        //}
+
+        //Thread.Sleep(100);
         //EntityManager.Instance.Update();
-        foreach (KeyValuePair<int, BaseGameEntity> pair in _entityDict)
-        {
-            pair.Value.Update();
-        }
+        //foreach (KeyValuePair<int, BaseGameEntity> pair in _entityDict)
+        //{
+            //pair.Value.Update();
+        //}
 
         MessageDispatcher.Instance.DispatchDelayedMessages();
     }

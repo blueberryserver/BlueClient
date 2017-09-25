@@ -57,7 +57,14 @@ public class BlueBotLogin : State<BlueBot>//, NetHandler
 
         if (entity.IsLogin())
         {
-            entity.ChangeState(BlueBotSelectAction.Instance);
+            if (entity.GetCharCount() <= 1) // 캐릭터는 2개가 있어야함
+            {
+                entity.ChangeState(BlueBotCreateChar.Instance);
+            }
+            else
+            {
+                entity.ChangeState(BlueBotSelectAction.Instance);
+            }
         }
     }
 

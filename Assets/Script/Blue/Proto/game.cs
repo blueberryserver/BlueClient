@@ -214,6 +214,13 @@ namespace MSG
       get { return _mobs; }
     }
   
+    private MSG.BattleData_ _winner;
+    [global::ProtoBuf.ProtoMember(5, IsRequired = true, DataFormat = global::ProtoBuf.DataFormat.Default)]
+    public MSG.BattleData_ winner
+    {
+      get { return _winner; }
+      set { _winner = value; }
+    }
   }
   
   [global::ProtoBuf.ProtoContract]

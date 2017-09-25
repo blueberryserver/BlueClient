@@ -32,11 +32,23 @@ public class BlueBotTierup : State<BlueBot>
     {
         Debug.Log("BlueBotTierup.Enter");
 
-        //State<BlueBot> state = entity.SelectAction();
+        //entity.ChangeState(BlueBotSelectAction.Instance);
+        List<int> slotNoList = new List<int>();
+        slotNoList.Add(0);
+        slotNoList.Add(1);
 
-        //entity.ChangeState(state);
+        for (int i = 0; i < slotNoList.Count; i++)
+        {
+            int charTier = entity.GetCharTier(slotNoList[i]);
+            if (0 <= charTier && charTier < 9)
+            {
+                entity.TierupChar(slotNoList[i]);
+                return;
+            }
+        }
 
-        entity.TierupChar();
+        State<BlueBot> state = entity.SelectAction();
+        entity.ChangeState(state);
     }
 
     public override void Execute(BlueBot entity)

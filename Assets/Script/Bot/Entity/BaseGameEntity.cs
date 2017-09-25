@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BaseGameEntity// : MonoBehaviour
+public class BaseGameEntity : MonoBehaviour
 {
     protected int _id = 0;
 

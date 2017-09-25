@@ -15,11 +15,11 @@ public class BlueBot : BaseGameEntity, NetHandler
     NetClient _netClient;
     string _ip = "";
     ushort _port = 0;
-    BlueUser _user = new BlueUser();
+    BlueUser _user;
     bool _isConnect;
     bool _isLogin;
     //bool _waitForReceive;
-    Dictionary<State<BlueBot>, float> _actionRateDict = new Dictionary<State<BlueBot>, float>(); 
+    Dictionary<State<BlueBot>, float> _actionRateDict;// = new Dictionary<State<BlueBot>, float>(); 
 
     public BlueBot(int id) : base(id)
     {
@@ -31,10 +31,12 @@ public class BlueBot : BaseGameEntity, NetHandler
         NetHanderInitializer.Instance.InitNetHandler(_netClient, this);
         _ip = "13.124.76.58";
         _port = 20000;
+        _user = new BlueUser();
         //_location = E_LOCATION_TYPE.SHACK;
         _isConnect = false;
         _isLogin = false;
         //_waitForReceive = false;
+        _actionRateDict = new Dictionary<State<BlueBot>, float>();
         //_actionRateDict.Add(MSG.MsgId.LOGIN_REQ, 1f);
         //_actionRateDict.Add(MSG.MsgId.REGIST_REQ, 1f);
         //_actionRateDict.Add(MSG.MsgId.CHAT_REQ, 0f);
@@ -128,6 +130,64 @@ public class BlueBot : BaseGameEntity, NetHandler
         return null;
     }
 
+    public int GetCharCount()
+    {
+        if (_user._data.chars == null)
+        {
+            return 0;
+        }
+
+        return _user._data.chars.Count;
+    }
+
+    public int GetCharLevel(int slotNo)
+    {
+        if (_user._data.chars == null)
+        {
+            return 0;
+        }
+
+        foreach (var it in _user._data.chars)
+        {
+            if (it.slotNo == slotNo)
+            {
+                return (int)it.level;
+            }
+        }
+
+        return 0;
+    }
+
+    public int GetCharTier(int slotNo)
+    {
+        if (_user._data.chars == null)
+        {
+            return 0;
+        }
+
+        foreach (var it in _user._data.chars)
+        {
+            if (it.slotNo == slotNo)
+            {
+                return (int)it.tier;
+            }
+        }
+
+        return 0;
+    }
+
+    public List<MSG.CharData_> GetCharList()
+    {
+        List<MSG.CharData_> charList = new List<MSG.CharData_>();
+
+        if (_user._data.chars == null)
+        {
+            return charList;
+        }
+
+        return _user._data.chars;
+    }
+
     public void SetDisplayColor(Color color)
     {
         ControlPanel controlPanel = ControlPanelManager.Instance.FindControlPanel(_id);
@@ -204,14 +264,29 @@ public class BlueBot : BaseGameEntity, NetHandler
         _netClient.SendPacket(MSG.MsgId.LOGIN_REQ, req);
     }
 
-    public void PlayDungeon()
+    public void CreateChar(int charNo)
+    {
+        Debug.Log("CreateChar");
+
+        if (_netClient.IsConnected() == false)
+        {
+            Debug.Log("Not connected");
+            return;
+        }
+
+        MSG.CreateCharReq req = new MSG.CreateCharReq();
+        req.charNo = (uint)charNo;
+        _netClient.SendPacket(MSG.MsgId.CREATECHAR_REQ, req);
+    }
+
+    public bool PlayDungeon()
     {
         Debug.Log("PlayDungeon");
 
         if (_netClient.IsConnected() == false)
         {
             Debug.Log("Not connected");
-            return;
+            return false;
         }
 
         MSG.PlayDungeonReq req = new MSG.PlayDungeonReq();
@@ -225,22 +300,27 @@ public class BlueBot : BaseGameEntity, NetHandler
             dungeonTier = _user._data.lastDungeon.dungeonTier;
         }
 
-        if (0 <= dungeonNo && dungeonNo < 20)
+        if (0 <= dungeonNo && dungeonNo < 10)
         {
             dungeonNo++;
         }
-        else
+        else if (10 <= dungeonNo && 0 <= dungeonTier && dungeonTier < 9)
         {
             dungeonNo = 0;
             dungeonTier++;
         }
+        else
+        {
+            Debug.Log("No more upgrade dungeon tier");
+            return false;
+        }
 
         req.dungeonNo = dungeonNo;
         req.tier = dungeonTier;
-        _netClient.SendPacket(MSG.MsgId.PLAYDUNGEON_REQ, req);
+        return _netClient.SendPacket(MSG.MsgId.PLAYDUNGEON_REQ, req);
     }
 
-    public void LevelupChar()
+    public void LevelupChar(int slotNo)
     {
         Debug.Log("LevelupChar");
 
@@ -251,11 +331,11 @@ public class BlueBot : BaseGameEntity, NetHandler
         }
 
         MSG.LevelupCharReq req = new MSG.LevelupCharReq();
-        req.slotNo = 0;
+        req.slotNo = (uint)slotNo;
         _netClient.SendPacket(MSG.MsgId.LEVELUPCHAR_REQ, req);
     }
 
-    public void TierupChar()
+    public void TierupChar(int slotNo)
     {
         Debug.Log("TierupChar");
 
@@ -266,7 +346,7 @@ public class BlueBot : BaseGameEntity, NetHandler
         }
 
         MSG.TierupCharReq req = new MSG.TierupCharReq();
-        req.slotNo = 0;
+        req.slotNo = (uint)slotNo;
         _netClient.SendPacket(MSG.MsgId.TIERUPCHAR_REQ, req);
     }
 
@@ -356,6 +436,21 @@ public class BlueBot : BaseGameEntity, NetHandler
     }
     public void OnMessage_CreateChar_Ans(NetClient netClient, MemoryStream stream)
     {
+        MSG.CreateCharAns ans = ProtoBuf.Serializer.Deserialize<MSG.CreateCharAns>(stream);
+
+        Debug.Log("OnMessage_CreateChar_Ans : " + ans.err);
+
+        // ans 처리
+        if (MSG.ErrorCode.ERR_SUCCESS == ans.err)
+        {
+            if (_user._data.chars != null)
+            {
+                _user._data.chars.Add(ans.char_);
+            }
+        }
+
+        // state 처리
+        MessageDispatcher.Instance.DispatchMessage(_id, _id, (int)MSG.MsgId.CREATECHAR_ANS, 0, ans);
     }
     public void OnMessage_Contents_Not(NetClient netClient, MemoryStream stream)
     {

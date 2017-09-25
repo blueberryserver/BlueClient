@@ -32,7 +32,12 @@ public class BlueBotPlayDungeon : State<BlueBot>
     {
         Debug.Log("BlueBotPlayDungeon.Enter");
 
-        entity.PlayDungeon();
+        //entity.ChangeState(BlueBotSelectAction.Instance);
+        if (entity.PlayDungeon() == false)
+        {
+            State<BlueBot> state = entity.SelectAction();
+            entity.ChangeState(state);
+        }
     }
 
     public override void Execute(BlueBot entity)
@@ -59,17 +64,24 @@ public class BlueBotPlayDungeon : State<BlueBot>
             if (MSG.ErrorCode.ERR_SUCCESS == ans.err)
             {
                 //ans.
-                // 클리어? -> SelectAction
-                //if (ans.err == )
-                {
-                    //state = BlueBotSelectAction.Instance;
-                }
-                // 안 클리어? -> Levelup or Tierup
+                if (ans.winner.team == MSG.BattleData_.Team.ENEMY)
                 {
                     // 레벨업 가능?
-                    state = BlueBotLevelup.Instance;
-                    // 티어업 가능?
-                    state = BlueBotTierup.Instance;
+                    for (int i = 0; i < entity.GetCharCount(); i++)
+                    {
+                        int charLevel = entity.GetCharLevel(i);
+                        int charTier = entity.GetCharTier(i);
+                        if (1 <= charLevel && charLevel < 20)
+                        {
+                            state = BlueBotLevelup.Instance;
+                            break;
+                        }
+                        else if (20 <= charLevel && 0 <= charTier && charTier < 9)
+                        {
+                            state = BlueBotTierup.Instance;
+                            break;
+                        }
+                    }
                 }
             }
             
