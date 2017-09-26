@@ -48,13 +48,15 @@ public class BlueBotLevelup : State<BlueBot>
         }
 
         State<BlueBot> state = entity.SelectAction();
-        entity.ChangeState(state);
+        entity.ChangeDelayedState(state);
     }
 
     public override void Execute(BlueBot entity)
     {
         Debug.Log("BlueBotLevelup.Execute");
 
+        State<BlueBot> state = entity.SelectAction();
+        entity.ChangeDelayedState(state);
     }
 
     public override void Exit(BlueBot entity)
@@ -77,7 +79,7 @@ public class BlueBotLevelup : State<BlueBot>
                 // 내용
             }
 
-            entity.ChangeState(state);
+            entity.ChangeDelayedState(state);
         }
 
         return false;

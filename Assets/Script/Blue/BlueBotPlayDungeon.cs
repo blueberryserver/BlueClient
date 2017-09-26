@@ -36,7 +36,7 @@ public class BlueBotPlayDungeon : State<BlueBot>
         if (entity.PlayDungeon() == false)
         {
             State<BlueBot> state = entity.SelectAction();
-            entity.ChangeState(state);
+            entity.ChangeDelayedState(state);
         }
     }
 
@@ -44,6 +44,8 @@ public class BlueBotPlayDungeon : State<BlueBot>
     {
         Debug.Log("BlueBotPlayDungeon.Execute");
 
+        State<BlueBot> state = entity.SelectAction();
+        entity.ChangeDelayedState(state);
     }
 
     public override void Exit(BlueBot entity)
@@ -85,7 +87,7 @@ public class BlueBotPlayDungeon : State<BlueBot>
                 }
             }
             
-            entity.ChangeState(state);
+            entity.ChangeDelayedState(state);
         }
 
         return false;

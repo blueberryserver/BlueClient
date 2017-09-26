@@ -84,7 +84,7 @@ public class BlueBotCreateChar : State<BlueBot>
                 }
             }
 
-            entity.ChangeState(state);
+            entity.ChangeDelayedState(state);
         }
 
         return false;

@@ -15,6 +15,7 @@ public class BlueBot : BaseGameEntity, NetHandler
     NetClient _netClient;
     string _ip = "";
     ushort _port = 0;
+    float _updateDelayed = 0.0f;
     BlueUser _user;
     bool _isConnect;
     bool _isLogin;
@@ -31,6 +32,7 @@ public class BlueBot : BaseGameEntity, NetHandler
         NetHanderInitializer.Instance.InitNetHandler(_netClient, this);
         _ip = "13.124.76.58";
         _port = 20000;
+        _updateDelayed = 0.0f;
         _user = new BlueUser();
         //_location = E_LOCATION_TYPE.SHACK;
         _isConnect = false;
@@ -52,6 +54,15 @@ public class BlueBot : BaseGameEntity, NetHandler
 
     public override void Update()
     {
+        if (Time.time <= _updateDelayed)
+        {
+            return;
+        }
+        else
+        {
+            _updateDelayed = Time.time + UnityEngine.Random.Range(0.3f, 1.7f);
+        }
+
         if (_stateMachine != null)
         {
             _stateMachine.Update();
@@ -66,6 +77,11 @@ public class BlueBot : BaseGameEntity, NetHandler
     public void ChangeState(State<BlueBot> state)
     {
         _stateMachine.ChangeState(state);
+    }
+
+    public void ChangeDelayedState(State<BlueBot> state)
+    {
+        _stateMachine.ChangeDelayedState(state);
     }
 
     public void RevertToPreviousState()
@@ -306,7 +322,7 @@ public class BlueBot : BaseGameEntity, NetHandler
         }
         else if (10 <= dungeonNo && 0 <= dungeonTier && dungeonTier < 9)
         {
-            dungeonNo = 0;
+            dungeonNo = 1;
             dungeonTier++;
         }
         else
@@ -477,14 +493,24 @@ public class BlueBot : BaseGameEntity, NetHandler
                 dungeonTier = _user._data.lastDungeon.dungeonTier;
             }
 
-            if (0 <= dungeonNo && dungeonNo < 20)
+            if (0 <= dungeonNo && dungeonNo < 10)
             {
                 dungeonNo++;
             }
+            else if (10 <= dungeonNo && 0 <= dungeonTier && dungeonTier < 9)
+            {
+                dungeonNo = 1;
+                dungeonTier++;
+            }
             else
             {
-                dungeonNo = 0;
-                dungeonTier++;
+                //Debug.Log("No more upgrade dungeon tier");
+                //dungeonNo
+            }
+
+            if (_user._data.lastDungeon == null)
+            {
+                _user._data.lastDungeon = new MSG.DungeonData_();
             }
 
             _user._data.lastDungeon.dungeonNo = dungeonNo;

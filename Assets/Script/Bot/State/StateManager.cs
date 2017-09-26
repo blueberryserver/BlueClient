@@ -8,6 +8,7 @@ public class StateManager<T> /*: MonoBehaviour*/
     State<T> _currentState;
     State<T> _previousState;
     State<T> _globalState;
+    State<T> _nextState;
 
     //private static StateManager<T> _instance = null;
 
@@ -33,6 +34,7 @@ public class StateManager<T> /*: MonoBehaviour*/
         _currentState = null;
         _previousState = null;
         _globalState = null;
+        _nextState = null;
     }
 
     public void SetCurrentState(State<T> state)
@@ -46,7 +48,10 @@ public class StateManager<T> /*: MonoBehaviour*/
     public void SetGlobalState(State<T> state)
     {
         _globalState = state;
-
+    }
+    public void SetNextState(State<T> state)
+    {
+        _nextState = state;
     }
     public State<T> GetCurrentState()
     {
@@ -60,6 +65,10 @@ public class StateManager<T> /*: MonoBehaviour*/
     {
         return _globalState;
     }
+    public State<T> GetNextState()
+    {
+        return _nextState;
+    }
     public void Update()
     {
         if (_globalState != null)
@@ -70,6 +79,12 @@ public class StateManager<T> /*: MonoBehaviour*/
         if (_currentState != null)
         {
             _currentState.Execute(_owner);
+        }
+
+        if (_nextState != null)
+        {
+            ChangeState(_nextState);
+            _nextState = null;
         }
     }
     public bool HandleMessage(ref Telegram msg)
@@ -101,6 +116,16 @@ public class StateManager<T> /*: MonoBehaviour*/
         {
             _currentState.Enter(_owner);
         } 
+    }
+    public void ChangeDelayedState(State<T> state)
+    {
+        if (_nextState != null)
+        {
+            //ChangeState(_nextState);
+            Debug.Log("_nextState != null");
+        }
+
+        _nextState = state;
     }
     public void RevertToPreviousState()
     {

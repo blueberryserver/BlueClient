@@ -105,11 +105,10 @@ public class EntityManager : MonoBehaviour
         //}
 
         //Thread.Sleep(100);
-        //EntityManager.Instance.Update();
-        //foreach (KeyValuePair<int, BaseGameEntity> pair in _entityDict)
-        //{
-            //pair.Value.Update();
-        //}
+        foreach (KeyValuePair<int, BaseGameEntity> pair in _entityDict)
+        {
+            pair.Value.Update();
+        }
 
         MessageDispatcher.Instance.DispatchDelayedMessages();
     }

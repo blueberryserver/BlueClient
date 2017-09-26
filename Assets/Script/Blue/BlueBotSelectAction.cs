@@ -34,7 +34,7 @@ public class BlueBotSelectAction : State<BlueBot>
 
         State<BlueBot> state = entity.SelectAction();
 
-        entity.ChangeState(state);
+        entity.ChangeDelayedState(state);
     }
 
     public override void Execute(BlueBot entity)
