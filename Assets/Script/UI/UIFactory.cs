@@ -69,6 +69,24 @@ public class UIFactory : MonoBehaviour
         return textObject;
     }
 
+    public GameObject CreateCanvas(Transform parent, string name, Rect rect)
+    {
+        GameObject canvasObject = new GameObject(name);
+        Canvas canvas = canvasObject.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvasObject.AddComponent<CanvasScaler>();
+        canvasObject.AddComponent<GraphicRaycaster>();
+        //Image image = canvasObject.AddComponent<Image>();
+        //image.sprite = UnityEditor.AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UISprite.psd");
+        //image.type = Image.Type.Sliced;
+        //image.color = Color.white;
+        RectTransform rectTransform = canvasObject.GetComponent<RectTransform>();
+        rectTransform.localPosition = new Vector2(rect.x, rect.y);
+        rectTransform.sizeDelta = new Vector2(rect.width, rect.height);
+        canvasObject.transform.SetParent(parent, false);
+        return canvasObject;
+    }
+
     public GameObject CreatePanel(Transform parent, string name, Rect rect)
     {
         GameObject panelObject = new GameObject(name);

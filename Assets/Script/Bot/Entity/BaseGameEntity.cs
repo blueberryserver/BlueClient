@@ -6,9 +6,18 @@ public class BaseGameEntity : MonoBehaviour
 {
     protected int _id = 0;
 
-    public BaseGameEntity(int id)
+    public BaseGameEntity(int id = 0)
     {
         _id = id;
+    }
+    
+    public void SetID(int id)
+    {
+        _id = id;
+    }
+
+    public virtual void Init()
+    {
     }
 
     public virtual void Update()

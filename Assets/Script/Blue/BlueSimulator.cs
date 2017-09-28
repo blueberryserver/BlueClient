@@ -25,27 +25,27 @@ public class BlueSimulator : MonoBehaviour//, NetHandler
         //SettingSinglePanelProtocolTest();
 
         Rect mainRect = new Rect(Vector3.zero, new Vector2(Screen.width, Screen.height));
-        int row = 2;
-        int col = 2;
+        int row = 4;
+        int col = 4;
         for (int i = 0; i < row; i++)
         {
             for (int j = 0; j < col; j++)
             {
-                int key = i * 100 + j;
-                
-                // ControlPanel
-                Rect rect = UIFactory.Instance.GetRectGrid(mainRect, row, col, i, j);
-                ControlPanel clientPanel = ControlPanelManager.Instance.CreateControlPanel(transform, "MainPanel", rect);
-                UIFactory.Instance.CreateText(transform, "Text", "", rect, clientPanel.SetTextDisplay);
-                ControlPanelManager.Instance.AddControlPanel(key, clientPanel);
+                int id = i * 100 + j;
 
                 // BlueBot
-                BlueBot bot = new BlueBot(key);
-                EntityManager.Instance.RegisterEntity(key, bot);
+                //BlueBot bot = new BlueBot(id);
+                BlueBot bot = EntityManager.Instance.AddEntity<BlueBot>(id);
+                //EntityManager.Instance.RegisterEntity(id, bot);
                 bot.ChangeState(BlueBotConnect.Instance);
 
-                // BlueMsgHanlder
-                //netClient.AsyncConnect(_ip, _port);
+                // ControlPanel
+                Rect rect = UIFactory.Instance.GetRectGrid(mainRect, row, col, i, j);
+                //ControlPanel clientPanel = ControlPanelManager.Instance.CreateControlPanel(transform, "MainPanel", rect);
+                Transform tf = ControlPanelManager.Instance.transform;
+                ControlPanel clientPanel = ControlPanelManager.Instance.AddControlPanel(id, tf, "MainPanel", rect);
+                UIFactory.Instance.CreateText(tf, "Text", "", rect, clientPanel.SetTextDisplay);
+                UIFactory.Instance.CreateButton(tf, "Text", rect, bot.OnButton);
             }
         }
     }

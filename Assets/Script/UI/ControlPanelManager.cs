@@ -14,7 +14,9 @@ public class ControlPanelManager : MonoBehaviour
         {
             if (_instance == null)
             {
-                GameObject gameObj = new GameObject("ControlPanelManager");
+                //GameObject gameObj = new GameObject("ControlPanelManager");
+                Rect rect = new Rect(Screen.width / 2.0f, Screen.height / 2.0f, Screen.width, Screen.height);
+                GameObject gameObj = UIFactory.Instance.CreateCanvas(null, "ControlPanelManager", rect);
                 _instance = gameObj.AddComponent<ControlPanelManager>();
 
                 if (_instance == null)
@@ -45,19 +47,24 @@ public class ControlPanelManager : MonoBehaviour
         return controlPanel;
     }
 
-    public void AddControlPanel(int key, ControlPanel controlPanel)
+    public ControlPanel AddControlPanel(int id, Transform parent, string name, Rect rect)
     {
-        _controlPanelDict.Add(key, controlPanel);
+        GameObject panel = UIFactory.Instance.CreatePanel(parent, name, rect);
+        ControlPanel controlPanel = panel.AddComponent<ControlPanel>();
+
+        _controlPanelDict.Add(id, controlPanel);
+
+        return controlPanel;
     }
 
-    public ControlPanel FindControlPanel(int key)
+    public ControlPanel FindControlPanel(int id)
     {
-        if (_controlPanelDict.ContainsKey(key) == false)
+        if (_controlPanelDict.ContainsKey(id) == false)
         {
             return null;
         }
 
-        return _controlPanelDict[key];
+        return _controlPanelDict[id];
     }
 
     public int FindKey(ControlPanel value)

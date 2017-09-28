@@ -24,11 +24,16 @@ public class BlueBot : BaseGameEntity, NetHandler
 
     public BlueBot(int id) : base(id)
     {
+        Init();
+    }
+
+    public override void Init()
+    {
         _stateMachine = new StateManager<BlueBot>(this);
         _stateMachine.SetCurrentState(null/*BlueBotConnect.Instance*/);
         _stateMachine.SetGlobalState(null/*BlueBotLogin::Instance()*/);
         // NetClient
-        _netClient = NetClientManager.Instance.AddNetClient(id);
+        _netClient = NetClientManager.Instance.AddNetClient(_id);
         NetHanderInitializer.Instance.InitNetHandler(_netClient, this);
         _ip = "13.124.76.58";
         _port = 20000;
@@ -376,8 +381,8 @@ public class BlueBot : BaseGameEntity, NetHandler
             return;
         }
 
-        int key = NetClientManager.Instance.FindKey(netClient);
-        string name = "user" + key;
+        int id = NetClientManager.Instance.FindID(netClient);
+        string name = "user" + id;
 
         _user._data.name = name;
 
@@ -560,5 +565,10 @@ public class BlueBot : BaseGameEntity, NetHandler
 
         // state 처리
         MessageDispatcher.Instance.DispatchMessage(_id, _id, (int)MSG.MsgId.TIERUPCHAR_ANS, 0, ans);
+    }
+
+    public void OnButton()
+    {
+        Debug.Log("OnButton!!! : " + _id);
     }
 }

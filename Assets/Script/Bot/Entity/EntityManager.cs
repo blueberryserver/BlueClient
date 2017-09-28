@@ -35,6 +35,19 @@ public class EntityManager : MonoBehaviour
         }
     }
 
+    public T AddEntity<T>(int id)
+    {
+        //gameObject.AddComponent(typeof(T));
+        //gameObject.AddComponent<T>();
+        Component component = gameObject.AddComponent(typeof(T));
+        object obj = component;
+        BaseGameEntity entity = (BaseGameEntity)obj;
+        entity.SetID(id);
+        entity.Init();
+        RegisterEntity(id, entity);
+        return (T)obj;
+    }
+
     public void RegisterEntity(int id, BaseGameEntity entity)
     {
         if (_entityDict.ContainsKey(id))
@@ -105,10 +118,10 @@ public class EntityManager : MonoBehaviour
         //}
 
         //Thread.Sleep(100);
-        foreach (KeyValuePair<int, BaseGameEntity> pair in _entityDict)
-        {
-            pair.Value.Update();
-        }
+        //foreach (KeyValuePair<int, BaseGameEntity> pair in _entityDict)
+        //{
+        //    pair.Value.Update();
+        //}
 
         MessageDispatcher.Instance.DispatchDelayedMessages();
     }

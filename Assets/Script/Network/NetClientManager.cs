@@ -42,42 +42,42 @@ public class NetClientManager : MonoBehaviour
     //    return gameObject.AddComponent<NetClient>();
     //}
 
-    public NetClient AddNetClient(int key)
+    public NetClient AddNetClient(int id)
     {
-        if (_netClientDict.ContainsKey(key))
+        if (_netClientDict.ContainsKey(id))
         {
-            //_netClientDict[key] = netClient;
-            return _netClientDict[key];
+            //_netClientDict[id] = netClient;
+            return _netClientDict[id];
         }
 
         NetClient netClient = gameObject.AddComponent<NetClient>();
-        _netClientDict.Add(key, netClient);
+        _netClientDict.Add(id, netClient);
 
-        return _netClientDict[key];
+        return _netClientDict[id];
     }
 
-    public void RemoveNetClient(int key)
+    public void RemoveNetClient(int id)
     {
-        if (_netClientDict.ContainsKey(key) == false)
+        if (_netClientDict.ContainsKey(id) == false)
         {
             return;
         }
 
-        DestroyObject(_netClientDict[key]); // pooling 방식으로 변경 가능
-        _netClientDict.Remove(key);
+        DestroyObject(_netClientDict[id]); // pooling 방식으로 변경 가능
+        _netClientDict.Remove(id);
     }
 
-    public NetClient FindNetClient(int key)
+    public NetClient FindNetClient(int id)
     {
-        if (_netClientDict.ContainsKey(key) == false)
+        if (_netClientDict.ContainsKey(id) == false)
         {
             return null;
         }
 
-        return _netClientDict[key];
+        return _netClientDict[id];
     }
 
-    public int FindKey(NetClient value)
+    public int FindID(NetClient value)
     {
         foreach (KeyValuePair<int, NetClient> pair in _netClientDict)
         {
