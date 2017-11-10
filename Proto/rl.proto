@@ -1,0 +1,17 @@
+syntax = "proto2";
+
+import "common.proto";
+package MSG;
+
+message ThinkReq {
+	required uint32 botNo = 1;
+	repeated float newStates = 2;
+	required float reward = 3;
+	required bool done = 4;
+}
+
+message ThinAns {
+	required ErrorCode error = 1;
+	required uint32 botNo = 2;
+	repeated float actions = 3;
+}

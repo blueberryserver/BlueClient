@@ -1,0 +1,243 @@
+syntax = "proto2";
+package MSG;
+
+// message type
+enum MsgId {
+	CLOSED = 10000;
+
+	LOGIN_REQ = 10101;
+	LOGIN_ANS = 10102;
+
+	PING_REQ = 10103;
+	PONG_ANS = 10104;
+
+	REGIST_REQ = 10105;
+	REGIST_ANS = 10106;
+
+	VERSION_REQ = 10107;
+	VERSION_ANS = 10108;
+
+	CHAT_REQ = 20101;
+	CHAT_ANS = 20102;
+	CHAT_NOT = 20103;
+
+	CREATECHATROOM_REQ = 20111;
+	CREATECHATROOM_ANS = 20112;
+	CREATECHATROOM_NOT = 20113;
+
+	INVITECHATROOM_REQ = 20121;
+	INVITECHATROOM_ANS = 20122;
+	INVITECHATROOM_NOT = 20123;
+
+	ENTERCHATROOM_REQ = 20131;
+	ENTERCHATROOM_ANS = 20132;
+	ENTERCHATROOM_NOT = 20133;
+
+	LEAVECHATROOM_REQ = 20141;
+	LEAVECHATROOM_ANS = 20142;
+	LEAVECHATROOM_NOT = 20143;
+
+	// character create
+	CREATECHAR_REQ = 20151;
+	CREATECHAR_ANS = 20152;
+
+	// auto send proto
+	CONTENTS_NOT = 20161;
+
+	CURRENCY_NOT = 20163;
+	
+	// dungenon play
+	PLAYDUNGEON_REQ = 20171;
+	PLAYDUNGEON_ANS = 20172;
+	PLAYDUNGEON_NOT = 20173;
+
+	LEVELUPCHAR_REQ = 20181;
+	LEVELUPCHAR_ANS = 20182;
+
+	TIERUPCHAR_REQ = 20191;
+	TIERUPCHAR_ANS = 20192;
+
+	BATTLELOG_REQ = 20201;
+	BATTLELOG_ANS = 20202;
+
+	THINK_REQ = 30001;
+	THINK_ANS = 30002;
+}
+
+// Error type
+enum ErrorCode {
+	ERR_SUCCESS = 0;
+	ERR_LOGIN_FAIL = 1;
+	ERR_ARGUMENT_FAIL = 2;
+	ERR_AUTHORITY_FAIL = 3;
+	ERR_SESSIONKEY_FAIL = 4;
+}
+
+// platform type
+enum PlatForm {
+	IOS = 0;
+	ANDROID = 1;
+}
+
+
+// user data
+message UserData_ {
+
+	required uint64 uid = 1;
+	required string name = 2;
+	optional string did = 3;
+	optional PlatForm platform = 4;
+
+	optional string loginDate = 5;
+	optional string logoutDate = 6;
+	optional string regDate = 7;
+
+	optional uint32 vc1 = 8;
+	optional uint32 vc2 = 9;
+	optional uint32 vc3 = 10;
+
+	optional string groupName = 11;
+	optional string language = 12;
+
+	repeated CharData_ chars = 13;
+	optional DungeonData_ lastDungeon = 14;
+}
+
+// contents info data
+message Contents_ {
+	// contents type
+	enum ContentType {
+		// ingame
+		CT_INGAME = 1;
+
+		// outgame
+		CT_OUTGAME = 2;
+
+		// in app purchase
+		CT_INAPPBUY = 3;
+	}
+
+	required ContentType type = 1;
+	required string name = 2;
+	
+}
+
+// group memebr
+message GMember_ {
+	enum GradeType {
+		Grade_1 = 1;
+		Grade_2 = 2;
+		Grade_3 = 3;
+		Grade_4 = 4;
+		Grade_5 = 5;
+	}
+
+	required uint64 uid = 1;
+	required string name = 2;
+	required GradeType grade = 3;
+}
+
+// group
+message Group_ {
+	required uint64 gid = 1;
+	required string name = 2;
+	required string country = 3;
+	required uint64 leader = 4;
+
+
+	required uint32 limit = 5;
+	repeated GMember_ members = 6;
+}
+
+
+// chat type
+enum ChatType {
+	CHAT_CHANNEL = 1;
+	CHAT_GROUP = 2;
+	CHAT_ROOM = 3;
+}
+
+// chat 
+message ChatData_ {
+	required uint64 uid = 1;
+	required string name = 2;
+	required string groupName = 3;
+
+	required string language = 4;
+	required string chat = 5;
+	required uint64 regDate = 6;
+}
+
+// chat room
+message ChatRoom_ {
+	required uint64 rid = 1;
+	required string name = 2;
+
+	repeated ChatData_ chats = 3;
+}
+
+// chat channel
+message ChatChannel_ {
+	required uint64 cid = 1;
+	required string name = 2;
+	
+	repeated ChatData_ chats = 3;
+}
+
+
+// character data
+message CharData_ {
+	required uint64 cid = 1;
+	required uint64 uid = 2;
+	optional uint32 slotNo = 3;
+	optional uint32 typeNo = 4;
+	optional uint32 level = 5;
+	optional uint32 tier = 6;
+	optional string regDate = 7;
+}
+
+// dungeon data
+message DungeonData_ {
+	required uint64 uid = 1;
+	required uint32 dungeonNo = 2;
+	required uint32 dungeonTier = 3;
+	optional string updateDate = 4;
+
+	// monster table
+	repeated CharData_ monsters = 5;
+}
+
+// battle data
+message BattleData_ {
+	enum AttackResult {
+		ALIVE = 0;
+		DEAD = 1;
+	}
+
+	enum Team {
+		ALLY = 0;
+		ENEMY = 1;
+	}
+
+	message Attack {
+		required uint32 no = 1;
+		required uint32 damage = 2;
+		required AttackResult result = 3;
+	}
+	
+
+	required uint32 srcNo = 1;
+	repeated Attack targets = 2;
+	required Team team = 3;
+}
+
+
+// dungeon play data log
+message DungeonPlayData_ {
+	required uint64 lid = 1;
+	required uint64 uid = 2;
+	repeated BattleData_ battles = 3;
+	repeated CharData_ chars = 4;
+	repeated CharData_ mobs = 5;	
+	required string regDate = 6;
+}

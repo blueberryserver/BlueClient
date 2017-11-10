@@ -8,7 +8,7 @@ using System.IO;
 using System.Net.Sockets;
 using System;
 
-public class BlueBot : BaseGameEntity, NetHandler
+public class BlueBot : BaseGameEntity, BlueNetHandler
 {
     StateManager<BlueBot> _stateMachine = null;
     //E_LOCATION_TYPE _location;
@@ -34,7 +34,7 @@ public class BlueBot : BaseGameEntity, NetHandler
         _stateMachine.SetGlobalState(null/*BlueBotLogin::Instance()*/);
         // NetClient
         _netClient = NetClientManager.Instance.AddNetClient(_id);
-        NetHanderInitializer.Instance.InitNetHandler(_netClient, this);
+        BlueNetHanderInitializer.Instance.InitNetHandler(_netClient, this);
         _ip = "13.124.76.58";
         _port = 20000;
         _updateDelayed = 0.0f;

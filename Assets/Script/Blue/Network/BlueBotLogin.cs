@@ -8,7 +8,7 @@ using System.IO;
 using System.Net.Sockets;
 using System;
 
-public class BlueBotLogin : State<BlueBot>//, NetHandler
+public class BlueBotLogin : State<BlueBot>//, BlueNetHandler
 {
     private static BlueBotLogin _instance = null;
 

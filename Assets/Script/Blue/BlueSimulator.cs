@@ -9,7 +9,7 @@ using System.Net.Sockets;
 using System;
 
 // net simulator
-public class BlueSimulator : MonoBehaviour//, NetHandler
+public class BlueSimulator : MonoBehaviour//, BlueNetHandler
 {
     //List<BaseGameEntity> _botList = new List<BaseGameEntity>();
     //List<int> _keyList = new List<int>();

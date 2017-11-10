@@ -32,15 +32,16 @@ public class GreenBotThink : State<GreenBot>
     {
         Debug.Log("GreenBotThink.Enter");
 
+        entity.Think();
     }
 
     public override void Execute(GreenBot entity)
     {
         Debug.Log("GreenBotThink.Execute");
 
-        entity.Think();
+        //entity.Think();
     
-        entity.ChangeDelayedState(GreenBotMove.Instance);
+        //entity.ChangeDelayedState(GreenBotMove.Instance);
     }
 
     public override void Exit(GreenBot entity)
@@ -51,6 +52,8 @@ public class GreenBotThink : State<GreenBot>
     public override bool OnMessage(GreenBot entity, Telegram msg)
     {
         Debug.Log("GreenBotThink.OnMessage");
+
+        entity.ChangeDelayedState(GreenBotMove.Instance);
 
         return false;
     }

@@ -41,8 +41,9 @@ public class GreenBotBrightFog : State<GreenBot>
         int groundIndex = GreenGround.Instance.GetGroundIndex(entity.GetPosition());
         GreenGround.Instance.ChangeTileType(groundIndex, GreenGround.TileType.MARKED);
         GreenGround.Instance.SetGroundColor(groundIndex, Color.white);
+        entity.SetReward(1.0f);
 
-        entity.ChangeDelayedState(GreenBotMove.Instance);
+        entity.ChangeDelayedState(GreenBotThink.Instance);
     }
 
     public override void Exit(GreenBot entity)

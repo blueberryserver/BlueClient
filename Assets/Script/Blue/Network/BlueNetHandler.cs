@@ -8,7 +8,7 @@ using System.IO;
 using System.Net.Sockets;
 using System;
 
-public interface NetHandler
+public interface BlueNetHandler
 {
     void OnConnected(NetClient netClient, SocketError errorCode);
     void OnClosed(NetClient netClient);
@@ -35,16 +35,16 @@ public interface NetHandler
     void OnMessage_TierUpChar_Ans(NetClient netClient, MemoryStream stream);
 }
 
-public class NetHanderInitializer
+public class BlueNetHanderInitializer
 {
-    private static NetHanderInitializer _instance = null;
-    public static NetHanderInitializer Instance
+    private static BlueNetHanderInitializer _instance = null;
+    public static BlueNetHanderInitializer Instance
     {
         get
         {
             if (_instance == null)
             {
-                _instance = new NetHanderInitializer();
+                _instance = new BlueNetHanderInitializer();
                 if (_instance == null)
                 {
                     //_instance = FindObjectOfType(typeof(NetHanderInitializer)) as NetHanderInitializer;
@@ -54,7 +54,7 @@ public class NetHanderInitializer
             return _instance;
         }
     }
-    public void InitNetHandler(NetClient netClient, NetHandler netHandler)
+    public void InitNetHandler(NetClient netClient, BlueNetHandler netHandler)
     {
         // set handler    
         netClient.SetOnConnected(netHandler.OnConnected);

@@ -665,7 +665,11 @@ namespace MSG
       
       BATTLELOG_REQ = 20201,
       
-      BATTLELOG_ANS = 20202
+      BATTLELOG_ANS = 20202,
+      
+      THINK_REQ = 30001,
+      
+      THINK_ANS = 30002
     }
   public enum ErrorCode
     {

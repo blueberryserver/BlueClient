@@ -8,11 +8,11 @@ using System.IO;
 using System.Net.Sockets;
 using System;
 
-public class GreenBotConnect : State<GreenBot>//, NetHandler
+public class BlueBotConnect : State<BlueBot>//, BlueNetHandler
 {
-    private static GreenBotConnect _instance = null;
+    private static BlueBotConnect _instance = null;
 
-    public static GreenBotConnect Instance
+    public static BlueBotConnect Instance
     {
         get
         {
@@ -20,7 +20,7 @@ public class GreenBotConnect : State<GreenBot>//, NetHandler
             {
                 if (_instance == null)
                 {
-                    _instance = new GreenBotConnect();
+                    _instance = new BlueBotConnect();
                 }
             }
 
@@ -28,9 +28,9 @@ public class GreenBotConnect : State<GreenBot>//, NetHandler
         }
     }
 
-    public override void Enter(GreenBot entity)
+    public override void Enter(BlueBot entity)
     {
-        Debug.Log("GreenBotConnect.Enter");
+        Debug.Log("BlueBotConnect.Enter");
         //NetClientManager.Instance.find
 
         //if (entity.GetLocation() != Miner.E_LOCATION_TYPE.SHACK)
@@ -51,9 +51,9 @@ public class GreenBotConnect : State<GreenBot>//, NetHandler
         }
     }
 
-    public override void Execute(GreenBot entity)
+    public override void Execute(BlueBot entity)
     {
-        Debug.Log("GreenBotConnect.Execute");
+        Debug.Log("BlueBotConnect.Execute");
         //Debug.Log("ID : " + entity.GetID());
         //Debug.Log("Good");
 
@@ -72,21 +72,20 @@ public class GreenBotConnect : State<GreenBot>//, NetHandler
         if (entity.IsConnect())
         {
             //entity.Login();
-            //entity.ChangeState(GreenBotLogin.Instance);
-            entity.ChangeState(GreenBotMove.Instance);
+            entity.ChangeState(BlueBotLogin.Instance);
         }
     }
 
-    public override void Exit(GreenBot entity)
+    public override void Exit(BlueBot entity)
     {
-        Debug.Log("GreenBotConnect.Exit");
+        Debug.Log("BlueBotConnect.Exit");
         Debug.Log("ID : " + entity.GetID());
         Debug.Log("Bye");
     }
 
-    public override bool OnMessage(GreenBot entity, Telegram msg)
+    public override bool OnMessage(BlueBot entity, Telegram msg)
     {
-        Debug.Log("GreenBotConnect.OnMessage");
+        Debug.Log("BlueBotConnect.OnMessage");
         //switch (msg._msg)
         //{
         //    case (int)E_MESSAGE_TYPE.STEW_READY:

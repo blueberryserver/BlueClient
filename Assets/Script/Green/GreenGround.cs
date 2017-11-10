@@ -179,4 +179,34 @@ public class GreenGround : MonoBehaviour
             //SetGroundColor(groundIndex, Color.white);
         }
     }
+
+    public bool IsOutOfGround(Vector3 pos)
+    {
+        float totalWidth = _groundUnitWidth * (float)_groundWidthCount;
+        float totalHeight = _groundUnitHeight * (float)_groundHeightCount;
+        float halfWidth = totalWidth / 2.0f;
+        float halfHeight = totalHeight / 2.0f;
+
+        float x = pos.x;
+        float y = pos.z;
+
+        if (-halfWidth <= x && x <= halfWidth &&
+            -halfHeight <= y && y <= halfHeight)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public List<TileType> GetTileTypeList()
+    {
+        List<TileType> tileTypeList = new List<TileType>();
+        foreach (Tile tile in _ground)
+        {
+            tileTypeList.Add(tile._tileType);
+        }
+
+        return tileTypeList;
+    }
 }
