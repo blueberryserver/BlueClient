@@ -217,7 +217,8 @@ public class GreenBot : BaseGameEntity, GreenNetHandler
     }
     public void OnMessage_Think_Ans(NetClient netClient, MemoryStream stream)
     {
-
+        Debug.Log("OnMessage_Think_Ans");
+        //Think();
     }
     //public void OnMessage_TierUpChar_Ans(NetClient netClient, MemoryStream stream)
     //{

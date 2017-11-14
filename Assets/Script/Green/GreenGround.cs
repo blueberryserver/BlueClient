@@ -193,10 +193,10 @@ public class GreenGround : MonoBehaviour
         if (-halfWidth <= x && x <= halfWidth &&
             -halfHeight <= y && y <= halfHeight)
         {
-            return true;
+            return false;
         }
 
-        return false;
+        return true;
     }
 
     public List<TileType> GetTileTypeList()

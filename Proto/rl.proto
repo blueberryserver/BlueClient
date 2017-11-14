@@ -10,7 +10,7 @@ message ThinkReq {
 	required bool done = 4;
 }
 
-message ThinAns {
+message ThinkAns {
 	required ErrorCode error = 1;
 	required uint32 botNo = 2;
 	repeated float actions = 3;
