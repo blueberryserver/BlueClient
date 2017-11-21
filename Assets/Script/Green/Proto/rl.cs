@@ -47,9 +47,9 @@ namespace MSG
   }
   
   [global::ProtoBuf.ProtoContract]
-  public partial class ThinAns
+  public partial class ThinkAns
   {
-    public ThinAns() {}
+    public ThinkAns() {}
     
     private MSG.ErrorCode _error;
     [global::ProtoBuf.ProtoMember(1, IsRequired = true, DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]

@@ -32,7 +32,11 @@ public class GreenBotThink : State<GreenBot>
     {
         Debug.Log("GreenBotThink.Enter");
 
-        entity.Think();
+        if (entity.IsRecv())
+        {
+            entity.Think();
+            entity.SetRecv(false);
+        }
     }
 
     public override void Execute(GreenBot entity)
@@ -53,8 +57,57 @@ public class GreenBotThink : State<GreenBot>
     {
         Debug.Log("GreenBotThink.OnMessage");
 
-        entity.ChangeDelayedState(GreenBotMove.Instance);
+        MSG.ThinkAns ans = (MSG.ThinkAns)msg._extraInfo;
 
+        if (entity.GetID() != ans.botNo)
+        {
+            Debug.Log("No same bot:" + ans.botNo);
+        }
+
+        //float x = ans.actions[0];
+        //float y = ans.actions[1];
+        int action = (int)ans.actions[0];
+        Vector3 dir = Vector3.zero;
+        switch (action)
+        {
+            case 0:
+                dir = (Vector3.forward).normalized;
+                break;
+            case 1:
+                dir = (Vector3.forward + Vector3.left).normalized;
+                break;
+            case 2:
+                dir = (Vector3.left).normalized;
+                break;
+            case 3:
+                dir = (Vector3.back + Vector3.left).normalized;
+                break;
+            case 4:
+                dir = (Vector3.back).normalized;
+                break;
+            case 5:
+                dir = (Vector3.back + Vector3.right).normalized;
+                break;
+            case 6:
+                dir = (Vector3.right).normalized;
+                break;
+            case 7:
+                dir = (Vector3.forward + Vector3.right).normalized;
+                break;
+        }
+
+        entity.SetDirection(dir);
+
+        entity.SetRecv(true);
+
+        if (ans.error == MSG.ErrorCode.ERR_LOGIN_FAIL)
+        {
+            entity.ResetBot();
+            GreenGround.Instance.ResetGround();
+        }
+
+        entity.ChangeDelayedState(GreenBotMove.Instance);
+        
         return false;
     }
 }

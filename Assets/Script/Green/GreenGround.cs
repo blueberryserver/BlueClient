@@ -8,8 +8,9 @@ public class GreenGround : MonoBehaviour
     {
         UNKNOWN = -2,
         OBSTACLE = -1,
-        EMPTY = 0,
-        MARKED = 1
+        EMPTY = 100,
+        MARKED = 200,
+        PLAYER = 300,
     }
 
     public class Tile
@@ -126,8 +127,8 @@ public class GreenGround : MonoBehaviour
             float right = rect.x + (rect.width / 2.0f);
             float top = rect.y + (rect.height / 2.0f);
             float bottom = rect.y - (rect.height / 2.0f);
-            if (left < x && bottom < z &&
-                x < right && z < top)
+            if (left <= x && bottom <= z &&
+                x <= right && z <= top)
             {
                 return i;
             }
@@ -208,5 +209,14 @@ public class GreenGround : MonoBehaviour
         }
 
         return tileTypeList;
+    }
+
+    public void ResetGround()
+    {
+        for (int i = 0; i < _ground.Count; i++)
+        {
+            ChangeTileType(i, TileType.EMPTY);
+            SetGroundColor(i, Color.black);
+        }
     }
 }

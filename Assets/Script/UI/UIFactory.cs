@@ -92,7 +92,7 @@ public class UIFactory : MonoBehaviour
         GameObject panelObject = new GameObject(name);
         panelObject.AddComponent<CanvasRenderer>();
         Image image = panelObject.AddComponent<Image>();
-        image.sprite = UnityEditor.AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UISprite.psd");
+        image.sprite = Resources.Load<Sprite>("UI/Skin/UISprite.psd");//UnityEditor.AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UISprite.psd");
         image.type = Image.Type.Sliced;
         image.color = Color.white;
         RectTransform rectTransform = panelObject.GetComponent<RectTransform>();
@@ -108,7 +108,7 @@ public class UIFactory : MonoBehaviour
         buttonObject.transform.SetParent(parent, false);
         buttonObject.AddComponent<CanvasRenderer>();
         Image image = buttonObject.AddComponent<Image>();
-        image.sprite = UnityEditor.AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UISprite.psd");
+        image.sprite = Resources.Load<Sprite>("UI/Skin/UISprite.psd");
         image.type = Image.Type.Sliced;
         //image.color = Color.white;
         Button button = buttonObject.AddComponent<Button>();
@@ -126,7 +126,7 @@ public class UIFactory : MonoBehaviour
         GameObject inputFieldObject = new GameObject(name);
         inputFieldObject.AddComponent<CanvasRenderer>();
         Image image = inputFieldObject.AddComponent<Image>();
-        image.sprite = UnityEditor.AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UISprite.psd");
+        image.sprite = Resources.Load<Sprite>("UI/Skin/UISprite.psd");
         image.type = Image.Type.Sliced;
         RectTransform rectTransform = inputFieldObject.GetComponent<RectTransform>();
         rectTransform.localPosition = new Vector2(rect.x, rect.y);

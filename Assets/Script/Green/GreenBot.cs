@@ -14,18 +14,22 @@ public class GreenBot : BaseGameEntity, GreenNetHandler
     NetClient _netClient = null;
     string _ip = "";
     ushort _port = 0;
-    bool _isConnect;
     float _updateDelayed = 0.0f;
+    bool _isConnect;
+    bool _isRecv;
     static GameObject _bodyPrefab = null;
     GameObject _body = null;
     //NeuralNetwork _neuralNetwork = null;
-    Vector3 _dirction = Vector3.zero;
+    Vector3 _direction = Vector3.zero;
     float _speed = 0.0f;
     float _newReward = 0.0f;
+    float _limitTime = 0.0f;
+    InputField _inputFieldIP;
+    InputField _inputFieldPort;
 
     public GreenBot(int id) : base(id)
     {
-        Init();
+        //Init();
     }
 
     public override void Init()
@@ -35,9 +39,11 @@ public class GreenBot : BaseGameEntity, GreenNetHandler
         _stateMachine.SetGlobalState(null/*BlueBotLogin::Instance()*/);
         _netClient = NetClientManager.Instance.AddNetClient(_id);
         GreenNetHanderInitializer.Instance.InitNetHandler(_netClient, this);
-        _ip = "127.0.0.1";
-        _port = 20000;
+        //_ip = "127.0.0.1";
+        //_port = 20000;
         _updateDelayed = 0.0f;
+        _isConnect = false;
+        _isRecv = false;
         if (_bodyPrefab == null)
         {
             _bodyPrefab = (GameObject)Resources.Load("Prefab/GreenBot", typeof(GameObject));
@@ -45,8 +51,8 @@ public class GreenBot : BaseGameEntity, GreenNetHandler
         Vector3 position = Vector3.zero;
         float totalGroundWidth = GreenGround.Instance.GetTotalGroundWidth();
         float totalGroundHeight = GreenGround.Instance.GetTotalGroundHeight();
-        position.x = UnityEngine.Random.Range(-totalGroundWidth/2.0f, totalGroundWidth/2.0f);
-        position.z = UnityEngine.Random.Range(-totalGroundHeight/2.0f, totalGroundHeight/2.0f);
+        position.x = 0.0f;// UnityEngine.Random.Range(-totalGroundWidth/2.0f, totalGroundWidth/2.0f);
+        position.z = 0.0f;// UnityEngine.Random.Range(-totalGroundHeight/2.0f, totalGroundHeight/2.0f);
         Quaternion rotation = Quaternion.identity;
         _body = Instantiate(_bodyPrefab, position, rotation);
         float r = UnityEngine.Random.Range(0.0f, 1.0f);
@@ -57,9 +63,10 @@ public class GreenBot : BaseGameEntity, GreenNetHandler
         //_neuralNetwork = new NeuralNetwork(/*_fogArray.Length +*/ 3 + 3, 10, 3);
         float dirx = UnityEngine.Random.Range(-1.0f, 1.0f);
         float dirz = UnityEngine.Random.Range(-1.0f, 1.0f);
-        _dirction = new Vector3(dirx, 0.0f, dirz);
-        _speed = 5.0f;
+        _direction = new Vector3(dirx, 0.0f, dirz);
+        _speed = 100.0f;
         _newReward = 0.0f;
+        _limitTime = Time.time + 10.0f;
     }
 
     public override void Update()
@@ -104,9 +111,19 @@ public class GreenBot : BaseGameEntity, GreenNetHandler
         return null;// _neuralNetwork;
     }
 
+    public void SetDirection(Vector3 direction)
+    {
+        _direction = direction;
+    }
+
     public Vector3 GetDirection()
     {
-        return _dirction;
+        return _direction;
+    }
+
+    public void SetPosition(Vector3 pos)
+    {
+        _body.transform.position = pos;
     }
 
     public Vector3 GetPosition()
@@ -117,6 +134,19 @@ public class GreenBot : BaseGameEntity, GreenNetHandler
     public void SetReward(float reward)
     {
         _newReward = reward;
+    }
+
+    public void SetLimitTIme(float limitTime)
+    {
+        _limitTime = limitTime;
+    }
+
+    public void ResetBot()
+    {
+        SetPosition(Vector3.zero);
+        SetDirection(Vector3.forward);
+        SetReward(0.0f);
+        SetLimitTIme(Time.time + 10);
     }
 
     public void Think()
@@ -137,16 +167,25 @@ public class GreenBot : BaseGameEntity, GreenNetHandler
         {
             req.newStates.Add(v);
         }
-        req.newStates.Add(GetPosition().x);
-        req.newStates.Add(GetPosition().z);
-        req.newStates.Add(_dirction.x);
-        req.newStates.Add(_dirction.z);
+        int groundIndex = GreenGround.Instance.GetGroundIndex(GetPosition());
+        if (-1 != groundIndex)
+        {
+            req.newStates[groundIndex] = (float)GreenGround.TileType.PLAYER;
+        }
+        //req.newStates.Add(GetPosition().x);
+        //req.newStates.Add(GetPosition().z);
+        //req.newStates.Add(_direction.x);
+        //req.newStates.Add(_direction.z);
         // 타일을 밝힐 때마다 1점씩 추가
         req.reward = _newReward;
         _newReward = 0.0f;
         // 조건1. 지역 벗어남 <- 우선 이것만 구현
         // 조건2. 시간 제한 <- 나중에 추가
         req.done = GreenGround.Instance.IsOutOfGround(GetPosition());
+        if (req.done == false && _limitTime < Time.time)
+        {
+            req.done = true;
+        }
         _netClient.SendPacket(MSG.MsgId.THINK_REQ, req);
 
         //int inputSize = /*_fogArray.Length +*/ 3 + 3; // fog + pos + dir
@@ -176,8 +215,8 @@ public class GreenBot : BaseGameEntity, GreenNetHandler
 
     public void Move()
     {
-        _dirction.Normalize();
-        Vector3 nextPos = _dirction * _speed * Time.deltaTime;
+        _direction.Normalize();
+        Vector3 nextPos = _direction * _speed * Time.deltaTime;
         _body.transform.position += nextPos;
     }
     
@@ -185,6 +224,17 @@ public class GreenBot : BaseGameEntity, GreenNetHandler
     {
         return _isConnect;
     }
+
+    public void SetRecv(bool isRecv)
+    {
+        _isRecv = isRecv;
+    }
+
+    public bool IsRecv()
+    {
+        return _isRecv;
+    }
+
     public void Connect()
     {
         if (_netClient)
@@ -192,6 +242,31 @@ public class GreenBot : BaseGameEntity, GreenNetHandler
             _netClient.AsyncConnect(_ip, _port);
         }
     }
+
+    public void SetInputIP(InputField inputField)
+    {
+        Debug.Log("OnInputIP");
+        _inputFieldIP = inputField;
+        //_ip = inputField.text;
+    }
+
+    public void SetInputPort(InputField inputField)
+    {
+        Debug.Log("OnInputPort");
+        _inputFieldPort = inputField;
+        //_port = Convert.ToUInt16(inputField.text);
+    }
+
+    public void OnStartButton()
+    {
+        Debug.Log("OnStartButton : "+ _inputFieldIP.text + " " + _inputFieldPort.text);
+        _ip = _inputFieldIP.text;
+        _port = Convert.ToUInt16(_inputFieldPort.text);
+        ControlPanel clientPanel = ControlPanelManager.Instance.FindControlPanel(_id);
+        clientPanel.gameObject.SetActive(false);
+        ChangeDelayedState(GreenBotConnect.Instance);
+    }
+
     public void OnConnected(NetClient netClient, SocketError errorCode)
     {
         Debug.Log("OnConnected : " + errorCode);
@@ -218,6 +293,8 @@ public class GreenBot : BaseGameEntity, GreenNetHandler
     public void OnMessage_Think_Ans(NetClient netClient, MemoryStream stream)
     {
         Debug.Log("OnMessage_Think_Ans");
+        MSG.ThinkAns ans = ProtoBuf.Serializer.Deserialize<MSG.ThinkAns>(stream);
+        MessageDispatcher.Instance.DispatchMessage(_id, _id, (int)MSG.MsgId.THINK_ANS, 0, ans);
         //Think();
     }
     //public void OnMessage_TierUpChar_Ans(NetClient netClient, MemoryStream stream)
